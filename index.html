@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Buddy (Grade 1–6) - Nethmi Bhagya</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --secondary: #06b6d4;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding-bottom: 65px; }
+
+        .hero-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: white; padding: 18px 12px 24px; text-align: center;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15); position: relative;
+        }
+        .top-bar-actions {
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .header-pill-btn {
+            background: rgba(255,255,255,0.16); color: #fff; border: 1px solid rgba(255,255,255,0.35);
+            padding: 5px 12px; border-radius: 18px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+        .timer-pill {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(239, 68, 68, 0.25); border: 1px solid #ef4444;
+            padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; color: #fca5a5;
+        }
+        .timer-pill.unlocked {
+            background: rgba(34, 197, 94, 0.25); border-color: #22c55e; color: #86efac;
+        }
+        .profile-card {
+            width: 96px; height: 118px; margin: 0 auto 8px;
+            border-radius: 14px; border: 3px solid #38bdf8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); overflow: hidden; background: #fff;
+        }
+        .profile-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .creator-tag { font-size: 18px; font-weight: 800; color: #38bdf8; }
+        .school-tag { font-size: 13px; color: #fef08a; font-weight: 600; margin-top: 2px; }
+
+        .container { max-width: 860px; margin: 14px auto; padding: 0 12px; }
+
+        .grade-bar {
+            background: #ffffff; padding: 12px; border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 2px solid #c7d2fe;
+            margin-bottom: 14px; text-align: center;
+        }
+        .grade-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 8px; }
+        @media (max-width: 520px) { .grade-grid { grid-template-columns: repeat(3, 1fr); } }
+        .grade-btn {
+            background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 10px;
+            padding: 8px 4px; font-size: 13px; font-weight: 800; color: #334155; cursor: pointer;
+        }
+        .grade-btn.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white; border-color: #b45309;
+        }
+
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
+        .nav-btn {
+            background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px;
+            padding: 9px 6px; font-size: 12.5px; font-weight: bold; color: #334155; cursor: pointer;
+        }
+        .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary-dark); }
+
+        .content-panel { display: none; }
+        .content-panel.active { display: block; }
+
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 16px;
+            margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+        }
+        .card-title {
+            font-size: 16.5px; font-weight: 800; color: var(--primary);
+            margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+        }
+
+        .control-strip {
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+            background: #f1f5f9; padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 12.5px;
+        }
+        .mode-toggle-group { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1.5px solid #94a3b8; }
+        .mode-btn { padding: 5px 10px; border: none; font-weight: 800; font-size: 12px; cursor: pointer; background: #fff; color: #334155; }
+        .mode-btn.active { background: #0284c7; color: #fff; }
+        .mode-btn.auto-active { background: #16a34a; color: #fff; }
+
+        .big-stage {
+            background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+            border: 2px solid #c7d2fe; border-radius: 18px; padding: 18px 14px;
+            text-align: center; margin-bottom: 14px;
+        }
+        .big-pic-frame {
+            width: 150px; height: 150px; margin: 0 auto 10px;
+            background: #ffffff; border-radius: 20px; border: 3px solid #818cf8;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            box-shadow: 0 6px 16px rgba(79,70,229,0.15);
+        }
+        .big-pic-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .big-emoji { font-size: 84px; line-height: 1; }
+        .big-word-en { font-size: 28px; font-weight: 900; color: #1e1b4b; }
+        .big-word-si { font-size: 18px; font-weight: 700; color: #0f766e; margin-top: 2px; }
+        .big-cat-tag {
+            display: inline-block; background: #e0e7ff; color: #3730a3;
+            font-size: 11.5px; font-weight: 800; padding: 3px 10px; border-radius: 12px; margin-top: 6px;
+        }
+
+        .words-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 9px; }
+        .word-tile {
+            background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 10px 6px; text-align: center; cursor: pointer; user-select: none;
+        }
+        .word-tile.speaking { background: #eef2ff; border-color: #4f46e5; }
+        .word-emoji { font-size: 28px; display: block; margin-bottom: 3px; }
+        .word-thumb { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; margin: 0 auto 4px; display: block; }
+        .word-en { font-size: 15px; font-weight: 800; color: #1e1b4b; display: block; }
+        .word-si { font-size: 12px; color: #475569; font-weight: 600; display: block; }
+
+        .sentence-card {
+            background: #f8fafc; border-left: 4px solid #06b6d4; border-radius: 10px;
+            padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+        }
+        .sentence-card.speaking { background: #ecfeff; border-left-color: #0284c7; }
+        .sent-en { font-size: 15px; font-weight: 800; color: #0f172a; }
+        .sent-si { font-size: 12.5px; color: #475569; }
+
+        .palette-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; }
+        .color-swatch {
+            width: 32px; height: 32px; border-radius: 50%; border: 3px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25); cursor: pointer;
+        }
+        .color-swatch.selected { transform: scale(1.2); border-color: #0f172a; }
+
+        .story-sentence { padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; background: #fff; border: 1px solid #e2e8f0; }
+        .story-sentence.active-line { background: #fef08a; border-color: #eab308; font-weight: 700; }
+
+        .btn-action {
+            background: #0284c7; color: white; border: none; padding: 7px 12px;
+            border-radius: 8px; font-weight: bold; font-size: 12.5px; cursor: pointer;
+        }
+        .btn-green {
+            background: #16a34a; color: white; border: none; padding: 7px 12px;
+            border-radius: 8px; font-weight: bold; font-size: 12.5px; cursor: pointer;
+        }
+        .btn-amber {
+            background: #d97706; color: white; border: none; padding: 7px 12px;
+            border-radius: 8px; font-weight: bold; font-size: 12.5px; cursor: pointer;
+        }
+        .btn-wa {
+            background: #25D366; color: white; border: none; padding: 10px;
+            border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; width: 100%;
+        }
+        .btn-unlock {
+            background: var(--primary); color: white; border: none; padding: 10px;
+            border-radius: 8px; font-weight: bold; font-size: 14.5px; cursor: pointer; width: 100%;
+        }
+        .input-box {
+            width: 100%; padding: 8px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.75); display: none; align-items: center; justify-content: center;
+            z-index: 9999; padding: 14px; overflow-y: auto;
+        }
+        .modal-card {
+            background: #fff; border-radius: 16px; padding: 18px; max-width: 440px; width: 100%;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35); max-height: 90vh; overflow-y: auto;
+        }
+
+        #lock-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.98); display: none; align-items: center; justify-content: center;
+            z-index: 2147483647; padding: 15px; overflow-y: auto;
+        }
+        .lock-card {
+            background: white; padding: 20px; border-radius: 16px; text-align: center;
+            max-width: 390px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .section-box {
+            background: #f8fafc; padding: 12px; border-radius: 12px; border: 1.5px solid #cbd5e1; margin-bottom: 10px;
+        }
+        .section-box.highlight { background: #eef2ff; border-color: #818cf8; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .paper-head { border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-app-wrapper">
+    <div class="hero-header">
+        <div class="timer-pill" id="timer-pill">
+            <span>⏱️ </span><span id="timer-display">03:00</span>
+        </div>
+        <div class="profile-card">
+            <img id="header-profile-img" src="https://i.postimg.cc/vZpyjTvG/5f4a2799-6616-4063-b59c-9a98d778267d.webp" alt="Profile">
+        </div>
+        <div class="creator-tag" id="header-creator-name">English Buddy • Nethmi Bhagya</div>
+        <div class="school-tag" id="header-school-name">ර/කුරුවිට මධ්‍ය මහා විද්‍යාලය (Grade 1 – 6)</div>
+        <div class="top-bar-actions">
+            <button type="button" class="header-pill-btn" onclick="installAppNow()">📲 Install App</button>
+            <button type="button" class="header-pill-btn" onclick="openEditAuthModal()">⚙️ Edit Profile / Info</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="grade-bar">
+            <div style="font-size:13.5px; font-weight:800; color:#1e1b4b;">🎓 ශ්‍රේණිය තෝරන්න (Select Grade 1–6 — ඒ ශ්‍රේණියට අදාළ පාඩම් පමණි):</div>
+            <div class="grade-grid">
+                <button type="button" class="grade-btn active" onclick="selectGrade(1, this)">Grade 1</button>
+                <button type="button" class="grade-btn" onclick="selectGrade(2, this)">Grade 2</button>
+                <button type="button" class="grade-btn" onclick="selectGrade(3, this)">Grade 3</button>
+                <button type="button" class="grade-btn" onclick="selectGrade(4, this)">Grade 4</button>
+                <button type="button" class="grade-btn" onclick="selectGrade(5, this)">Grade 5</button>
+                <button type="button" class="grade-btn" onclick="selectGrade(6, this)">Grade 6</button>
+            </div>
+        </div>
+
+        <div class="nav-grid" id="main-nav-grid">
+            <button type="button" class="nav-btn active" onclick="switchTab(event, 'tab-words')">🗣️ තනි වචන</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-activities')">💬 ක්‍රියාකාරකම්</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-dictation')">✍️ Dictation</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-games')">🎮 Games & Color</button>
+            <button type="button" class="nav-btn" id="nav-grammar-btn" onclick="switchTab(event, 'tab-grammar')">📚 12 Tenses & Join</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-stories')">📖 ළමා කතන්දර</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-chat')">🤖 Chat & WhatsApp</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-pdf')">📄 PDF Exam (100)</button>
+            <button type="button" class="nav-btn" onclick="switchTab(event, 'tab-progress')">📊 Progress</button>
+        </div>
+
+        <!-- 1. SINGLE WORDS -->
+        <div id="tab-words" class="content-panel active">
+            <div class="card">
+                <div class="card-title">
+                    <span id="words-title">🗣️ Grade 1 - තනි වචන (Single Words)</span>
+                    <button type="button" class="btn-green" onclick="openAddItemModal('word')">➕ Add Word / Photo</button>
+                </div>
+
+                <div class="control-strip">
+                    <div>
+                        <label><strong>Category:</strong></label>
+                        <select id="word-category-select" onchange="onWordConfigChange()" style="padding:4px 8px; border-radius:6px;">
+                            <option value="ALL">All Categories</option>
+                            <option value="Places">Places (ස්ථාන)</option>
+                            <option value="People & Names">People & Names (පුද්ගලයන්/නම්)</option>
+                            <option value="Animals">Animals (සතුන්)</option>
+                            <option value="Food & Things">Food & Things (ආහාර/දේවල්)</option>
+                            <option value="Nature">Nature (පරිසරය)</option>
+                            <option value="Actions">Actions (ක්‍රියා)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label><strong>අභ්‍යාසයට පෙර වචන ගණන:</strong></label>
+                        <select id="word-batch-size" onchange="onWordConfigChange()" style="padding:4px 8px; border-radius:6px;">
+                            <option value="10">10 Words</option>
+                            <option value="20">20 Words</option>
+                            <option value="30">30 Words</option>
+                            <option value="40">40 Words</option>
+                            <option value="50">50 Words</option>
+                            <option value="60">60 Words</option>
+                            <option value="ALL">All Available</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label><strong>Repeat වාර ගණන:</strong></label>
+                        <select id="word-repeat-count" style="padding:4px 8px; border-radius:6px;">
+                            <option value="1">1x (1 පාරක්)</option>
+                            <option value="2" selected>2x (2 පාරක්)</option>
+                            <option value="3">3x (3 පාරක්)</option>
+                            <option value="4">4x (4 පාරක්)</option>
+                        </select>
+                    </div>
+
+                    <div class="mode-toggle-group">
+                        <button type="button" class="mode-btn active" id="word-manual-btn" onclick="setWordMode('manual')">✋ Manual</button>
+                        <button type="button" class="mode-btn" id="word-auto-btn" onclick="setWordMode('auto')">▶️ Auto</button>
+                    </div>
+                </div>
+
+                <div class="big-stage" id="word-stage">
+                    <div class="big-pic-frame" id="stage-pic-frame">
+                        <span class="big-emoji" id="stage-emoji">🍎</span>
+                    </div>
+                    <div class="big-word-en" id="stage-en">Apple</div>
+                    <div class="big-word-si" id="stage-si">ඇපල් ගෙඩිය</div>
+                    <div class="big-cat-tag" id="stage-cat">Food & Things</div>
+                    <div id="stage-progress-note" style="font-size:12px; color:#475569; margin-top:6px; font-weight:700;">Word 1 of 10</div>
+
+                    <div style="margin-top:12px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action" onclick="prevWordStage()">⬅️ Previous</button>
+                        <button type="button" class="btn-green" onclick="speakCurrentStageWord()">🔊 Speak (EN + SI)</button>
+                        <button type="button" class="btn-action" onclick="nextWordStage()">Next ➡️</button>
+                        <button type="button" class="btn-amber" onclick="startPostStudyWordQuiz()">📝 Start Exercise Now</button>
+                    </div>
+                </div>
+
+                <div id="word-post-quiz" style="display:none; background:#f0fdf4; border:2px solid #86efac; border-radius:14px; padding:14px; margin-bottom:14px;">
+                    <div style="font-weight:800; color:#166534; font-size:15px; margin-bottom:8px;">
+                        🎯 අභ්‍යාසය (පාඩම් කළ වචනවලින් පමණි):
+                    </div>
+                    <div id="word-quiz-body"></div>
+                </div>
+
+                <div class="words-grid" id="words-grid-container"></div>
+            </div>
+        </div>
+
+        <!-- 2. ACTIVITIES & DAILY TALK -->
+        <div id="tab-activities" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span id="activities-title">💬 ක්‍රියාකාරකම් සහ එදිනෙදා කතා (50+ per Setting)</span>
+                    <button type="button" class="btn-green" onclick="openAddItemModal('activity')">➕ Add Activity / Sentence</button>
+                </div>
+
+                <div class="control-strip">
+                    <div>
+                        <button type="button" class="btn-action" onclick="selectActivityPlace('home', this)" id="place-btn-home">🏠 නිවසේදී (50+)</button>
+                        <button type="button" class="btn-action" onclick="selectActivityPlace('school', this)" id="place-btn-school" style="background:#475569;">🏫 පාසලේදී (50+)</button>
+                        <button type="button" class="btn-action" onclick="selectActivityPlace('public', this)" id="place-btn-public" style="background:#475569;">🚌 පොදු ස්ථාන (50+)</button>
+                    </div>
+
+                    <div>
+                        <label><strong>ප්‍රශ්නවලට පෙර වාක්‍ය ගණන:</strong></label>
+                        <select id="act-batch-count" style="padding:4px 8px; border-radius:6px;">
+                            <option value="10">10 Sentences</option>
+                            <option value="20">20 Sentences</option>
+                            <option value="30">30 Sentences</option>
+                            <option value="50">50 Sentences</option>
+                        </select>
+                    </div>
+
+                    <div class="mode-toggle-group">
+                        <button type="button" class="mode-btn active" id="act-manual-btn" onclick="setActivityMode('manual')">✋ Manual</button>
+                        <button type="button" class="mode-btn" id="act-auto-btn" onclick="setActivityMode('auto')">▶️ Auto</button>
+                    </div>
+                </div>
+
+                <div id="activity-quiz-box" style="display:none; background:#fffbeb; border:2px solid #fcd34d; border-radius:14px; padding:14px; margin-bottom:12px;">
+                    <div style="font-weight:800; color:#92400e; margin-bottom:8px;">📝 Activity Practice (සිංහලෙන් අසා නිවැරදි ඉංග්‍රීසි වාක්‍යය තෝරන්න):</div>
+                    <div id="activity-quiz-body"></div>
+                </div>
+
+                <div id="activities-list-container"></div>
+            </div>
+        </div>
+
+        <!-- 3. DICTATION -->
+        <div id="tab-dictation" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>✍️ Dictation & Spelling Trainer (Full Word Spelling & Hidden Test)</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:12px; padding:12px; margin-bottom:14px;">
+                    <div style="font-weight:800; font-size:14px; color:#1e1b4b; margin-bottom:6px;">
+                        1️⃣ පොතේ ෆොටෝ එකක් Upload කරන්න හෝ වචන ටයිප් කරන්න:
+                    </div>
+                    <input type="file" id="dict-photo-input" accept="image/*" onchange="scanDictationPhoto(event)" style="margin-bottom:8px; font-size:13px;">
+                    <div id="ocr-status" style="font-size:12.5px; color:#0284c7; font-weight:700; margin-bottom:6px;"></div>
+                    <textarea id="dict-words-input" rows="3" class="input-box" placeholder="Enter words separated by commas or new lines, e.g.: Butterfly, Elephant, School, Good morning, Thank you"></textarea>
+                    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action" onclick="loadDictationList()">📋 Load Word List</button>
+                        <button type="button" class="btn-green" onclick="spellAllDictationWordsSequentially()">🔤 Spell All Words (Letter-by-Letter)</button>
+                        <button type="button" class="btn-amber" onclick="enterDictationTestMode('full')">🔒 Start Full Memory Test (වචන සැඟවේ)</button>
+                        <button type="button" class="btn-action" style="background:#7c3aed;" onclick="enterDictationTestMode('missing')">🧩 Start Missing Letters Test</button>
+                    </div>
+                </div>
+
+                <div id="dict-study-area">
+                    <div style="font-weight:700; font-size:14px; margin-bottom:8px;">📖 පාඩම් කරන වචන ලැයිස්තුව (කියවීමට ටච් කරන්න):</div>
+                    <div id="dict-chips-container" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+                    <div id="dict-live-spell-box" style="margin-top:12px; padding:12px; background:#eef2ff; border-radius:10px; font-weight:800; color:#1e1b4b; min-height:44px;"></div>
+                </div>
+
+                <div id="dict-test-area" style="display:none; background:#fef2f2; border:2px solid #fca5a5; border-radius:14px; padding:16px; text-align:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-weight:800; color:#991b1b;">🔒 Test Mode (Words Hidden)</span>
+                        <button type="button" class="btn-action" onclick="exitDictationTestToStudy()">👁️ Back to Study List</button>
+                    </div>
+                    <div id="dict-test-progress" style="font-size:13px; font-weight:700; color:#475569;">Word 1</div>
+                    <div style="margin:10px 0;">
+                        <button type="button" class="btn-action" onclick="speakCurrentDictTarget()">🔊 Listen Word</button>
+                        <button type="button" class="btn-green" onclick="spellCurrentDictTarget()">🔤 Spell Letters</button>
+                    </div>
+                    <div id="dict-missing-hint" style="font-size:22px; font-weight:900; letter-spacing:4px; color:#1e1b4b; margin:8px 0;"></div>
+                    <input type="text" id="dict-test-input" oninput="checkDictTypingLive()" onkeydown="if(event.key==='Enter') evaluateDictWord(true)" class="input-box" style="max-width:340px; margin:8px auto; display:block; text-align:center; font-size:17px; font-weight:800;" placeholder="Type spelling here..." autocomplete="off">
+                    <div id="dict-test-feedback" style="font-weight:800; font-size:15px; margin-top:8px; min-height:24px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. GAMES & KIDS ZONE -->
+        <div id="tab-games" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span id="games-title">🎮 Games & Kids Zone</span>
+                    <button type="button" class="btn-green" onclick="openAddItemModal('game')">➕ Add Game Item / Photo</button>
+                </div>
+
+                <div class="control-strip">
+                    <div>
+                        <button type="button" class="btn-action" onclick="switchGameSub('picture-game')">🖼️ Picture Match Game</button>
+                        <button type="button" class="btn-action" style="background:#ec4899;" onclick="switchGameSub('coloring-game')">🎨 Listen & Color (12 Colors)</button>
+                    </div>
+                    <div class="mode-toggle-group">
+                        <button type="button" class="mode-btn active" id="game-manual-btn" onclick="setGameMode('manual')">✋ Manual</button>
+                        <button type="button" class="mode-btn" id="game-auto-btn" onclick="setGameMode('auto')">▶️ Auto Next</button>
+                    </div>
+                </div>
+
+                <div id="subgame-picture" style="text-align:center;">
+                    <div style="font-size:14px; font-weight:800; margin-bottom:8px;">
+                        Score: <span id="pg-score" style="color:#16a34a;">0</span> | <span id="pg-prompt">Listen and select the right picture!</span>
+                    </div>
+                    <button type="button" class="btn-action" onclick="speakPictureGamePrompt()">🔊 Speak Word</button>
+                    <div id="pg-feedback" style="font-weight:800; margin:8px 0; min-height:22px;"></div>
+                    <div id="pg-choices" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; max-width:520px; margin:0 auto;"></div>
+                </div>
+
+                <div id="subgame-coloring" style="display:none; text-align:center;">
+                    <div id="color-instruction" style="font-size:15px; font-weight:800; color:#1e1b4b; margin-bottom:6px;">
+                        🎨 Color the shape: <span id="target-color-name" style="color:#dc2626;">Red</span>
+                    </div>
+                    <button type="button" class="btn-action" onclick="speakColorPrompt()">🔊 Listen Color Instruction</button>
+
+                    <div class="palette-row" id="color-palette"></div>
+
+                    <div style="max-width:340px; margin:10px auto; background:#fff; border:2px solid #cbd5e1; border-radius:16px; padding:12px;">
+                        <svg id="coloring-svg" viewBox="0 0 240 180" width="100%" height="190">
+                            <circle id="shape-sun" cx="65" cy="60" r="34" fill="#ffffff" stroke="#1e293b" stroke-width="4" style="cursor:pointer;" onclick="paintShape('shape-sun', 'Sun')"></circle>
+                            <rect id="shape-box" x="125" y="32" width="75" height="62" rx="8" fill="#ffffff" stroke="#1e293b" stroke-width="4" style="cursor:pointer;" onclick="paintShape('shape-box', 'Box')"></rect>
+                            <polygon id="shape-star" points="120,105 133,134 164,137 140,157 147,188 120,172 93,188 100,157 76,137 107,134" transform="translate(0,-5) scale(0.85)" fill="#ffffff" stroke="#1e293b" stroke-width="4" style="cursor:pointer;" onclick="paintShape('shape-star', 'Star')"></polygon>
+                        </svg>
+                    </div>
+                    <div id="color-feedback" style="font-weight:800; font-size:14px; min-height:22px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 12 TENSES & CONNECTORS -->
+        <div id="tab-grammar" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>📚 12 Tenses (උදාහරණ 10 බැගින්) & Connectors (is, am, are, to, the, for, from, in, on, with)</span>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <button type="button" class="btn-action" onclick="switchGrammarSub('tenses')">⏱️ 12 Tenses (10 Examples Each)</button>
+                    <button type="button" class="btn-action" style="background:#0d9488;" onclick="switchGrammarSub('connectors')">🔗 Word Connectors (2 Examples Each)</button>
+                </div>
+
+                <div id="grammar-tenses-view">
+                    <div style="margin-bottom:10px;">
+                        <label><strong>Tense එක තෝරන්න:</strong></label>
+                        <select id="tense-selector" onchange="renderSelectedTense()" class="input-box" style="margin-top:4px;"></select>
+                    </div>
+
+                    <div id="tense-detail-card" style="background:#eef2ff; border:2px solid #c7d2fe; border-radius:14px; padding:14px; margin-bottom:12px;"></div>
+
+                    <div style="background:#fffbeb; border:1.5px solid #fcd34d; border-radius:12px; padding:12px;">
+                        <div style="font-weight:800; font-size:13.5px; color:#92400e; margin-bottom:6px;">
+                            ❓ තේරෙන්නේ නැති දෙයක් මෙහි ටයිප් කර අසන්න (Ask / Explain):
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="tense-doubt-input" class="input-box" placeholder="උදා: Why do we add 's' in present tense? හෝ ඕනෑම ගැටලුවක්...">
+                            <button type="button" class="btn-amber" onclick="answerTenseDoubt()">Explain</button>
+                        </div>
+                        <div id="tense-doubt-reply" style="margin-top:8px; font-size:13.5px; font-weight:700; color:#1e1b4b;"></div>
+                    </div>
+                </div>
+
+                <div id="grammar-connectors-view" style="display:none;">
+                    <div id="connectors-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. KIDS STORIES -->
+        <div id="tab-stories" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span id="stories-title">📖 ළමා කතන්දර (Kids Stories - Slow Clear Voice)</span>
+                    <button type="button" class="btn-green" onclick="openAddItemModal('story')">➕ Add Story</button>
+                </div>
+
+                <div class="control-strip">
+                    <div>
+                        <label><strong>කතාව තෝරන්න:</strong></label>
+                        <select id="story-selector" onchange="renderSelectedStory()" style="padding:5px 8px; border-radius:6px; max-width:260px;"></select>
+                    </div>
+                    <div>
+                        <label><strong>කියවන වේගය:</strong></label>
+                        <input type="range" id="story-rate-slider" min="0.55" max="1.05" step="0.05" value="0.72" oninput="document.getElementById('story-rate-val').textContent=this.value+'x'">
+                        <span id="story-rate-val" style="font-weight:800;">0.72x</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-green" onclick="playCurrentStory()">▶️ Read Story</button>
+                        <button type="button" class="btn-action" style="background:#ef4444;" onclick="stopSpeechAll()">⏹️ Stop</button>
+                    </div>
+                </div>
+
+                <div id="story-reader-box" style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:14px; padding:14px;"></div>
+            </div>
+        </div>
+
+        <!-- 7. FRIEND CHAT & WHATSAPP -->
+        <div id="tab-chat" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>🤖 Natural Friend Chat (Live Voice-to-Text) & Sinhala → English WhatsApp</span>
+                </div>
+
+                <div style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:14px; padding:14px; margin-bottom:14px;">
+                    <div style="font-weight:800; font-size:15px; color:#1e1b4b; margin-bottom:6px;">
+                        💬 යාළුවෙක් වගේ ඉංග්‍රීසියෙන් කතා කරමු (Natural Friend Conversation):
+                    </div>
+                    <div id="friend-chat-log" style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:10px; max-height:220px; overflow-y:auto; margin-bottom:10px; font-size:14px;"></div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="friend-chat-input" class="input-box" style="flex:1; min-width:180px;" placeholder="Type or speak in English (e.g., Hi! How are you?)" onkeydown="if(event.key==='Enter') sendFriendChat()">
+                        <button type="button" class="btn-amber" onclick="startLiveVoiceTyping('friend-chat-input', 'en-US')">🎤 Speak (Live Type)</button>
+                        <button type="button" class="btn-green" onclick="sendFriendChat()">Send ➡️</button>
+                    </div>
+                    <div id="voice-status-friend" style="font-size:12px; color:#0284c7; font-weight:700; margin-top:4px;"></div>
+                </div>
+
+                <div style="background:#eef2ff; border:2px solid #a5b4fc; border-radius:14px; padding:14px;">
+                    <div style="font-weight:800; font-size:15px; color:#312e81; margin-bottom:6px;">
+                        🌍 සිංහලෙන් කියන/ටයිප් කරන දේ ඉංග්‍රීසියෙන් කියා WhatsApp යැවීම:
+                    </div>
+                    <p style="font-size:12.5px; color:#475569; margin-bottom:8px;">
+                        උදා: <em>"සීගිරිය ඉතාමත් ලස්සනයි. සීගිරිය පිහිටලා තියෙන්නේ දඹුල්ලේ. ඒක ලෝක පුදුම අටෙන් එකක්."</em> ලෙස සිංහලෙන් කියන්න හෝ ටයිප් කරන්න.
+                    </p>
+                    <input type="text" id="wa-target-phone" class="input-box" style="margin-bottom:8px;" placeholder="WhatsApp අංකය (උදා: 94771234567)" value="94784693750">
+                    <textarea id="si-to-en-input" rows="2" class="input-box" style="margin-bottom:8px;" placeholder="සිංහලෙන් කියන්න හෝ ටයිප් කරන්න..."></textarea>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn-amber" onclick="startLiveVoiceTyping('si-to-en-input', 'si-LK')">🎤 Speak Sinhala</button>
+                        <button type="button" class="btn-action" onclick="translateAndSpeakSinhala()">🔊 Translate & Speak English</button>
+                        <button type="button" class="btn-wa" style="width:auto; padding:8px 14px;" onclick="sendTranslatedToWhatsApp()">📲 Send to WhatsApp</button>
+                    </div>
+                    <div id="voice-status-si" style="font-size:12px; color:#3730a3; font-weight:700; margin-top:4px;"></div>
+                    <div id="si-en-output-box" style="margin-top:10px; background:white; border-radius:10px; padding:10px; font-weight:800; color:#0f172a; min-height:38px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. 100-MARK PDF EXAM -->
+        <div id="tab-pdf" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>📄 Grade 1–6 ලකුණු 100 ප්‍රශ්න පත්‍රය (100-Mark Custom PDF Generator)</span>
+                </div>
+                <p style="font-size:13px; color:#475569; margin-bottom:10px;">
+                    ඔබට අවශ්‍ය ප්‍රශ්න ගණන ටයිප් කරන්න. මුළු ලකුණු ගණන <strong>100</strong> වන ලෙස සකස් කර PDF බාගත කරන්න.
+                </p>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:12px; font-weight:800;">MCQ ගණන (1 Mark each):</label>
+                        <input type="number" id="exam-mcq-count" class="input-box" value="25" min="0" oninput="updateExamMarksTotal()">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:800;">2-Mark ප්‍රශ්න ගණන:</label>
+                        <input type="number" id="exam-q2-count" class="input-box" value="15" min="0" oninput="updateExamMarksTotal()">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:800;">3-Mark ප්‍රශ්න ගණන:</label>
+                        <input type="number" id="exam-q3-count" class="input-box" value="5" min="0" oninput="updateExamMarksTotal()">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:800;">5-Mark ප්‍රශ්න ගණන:</label>
+                        <input type="number" id="exam-q5-count" class="input-box" value="6" min="0" oninput="updateExamMarksTotal()">
+                    </div>
+                </div>
+
+                <div style="background:#eef2ff; padding:10px 12px; border-radius:10px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span id="exam-marks-summary" style="font-weight:800; color:#1e1b4b;">Total Marks: 100 / 100 ✅</span>
+                    <button type="button" class="btn-action" onclick="autoBalanceTo100()">⚖️ Auto-Set (25 MCQ + 15×2 + 5×3 + 6×5 = 100)</button>
+                </div>
+
+                <button type="button" class="btn-green" style="width:100%; padding:12px; font-size:15px;" onclick="generateAndPrint100MarkExam()">
+                    🖨️ 100-Mark Exam Paper PDF බාගත කරන්න / Print කරන්න
+                </button>
+            </div>
+        </div>
+
+        <!-- 9. PROGRESS -->
+        <div id="tab-progress" class="content-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span id="progress-title">📊 Grade 1 Progress Report</span>
+                    <button type="button" class="btn-action" onclick="window.print()">🖨️ Print Report</button>
+                </div>
+                <div id="grade-progress-cards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="printable-area"></div>
+
+<div id="add-item-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 id="add-modal-title">➕ Add New Item</h3>
+            <button type="button" onclick="closeAddItemModal()" style="background:#ef4444; color:white; border:none; border-radius:6px; padding:4px 10px; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div id="add-modal-fields"></div>
+        <button type="button" class="btn-green" style="width:100%; margin-top:12px; padding:10px;" onclick="saveCustomItem()">💾 Save to Grade</button>
+    </div>
+</div>
+
+<div id="edit-profile-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3>⚙️ Edit Profile & App Info</h3>
+            <button type="button" onclick="closeEditModal()" style="background:#ef4444; color:white; border:none; border-radius:6px; padding:4px 10px; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div id="edit-auth-box">
+            <p style="font-size:13px; color:#475569; margin-bottom:8px;">Enter Admin PIN to edit profile & settings:</p>
+            <input type="password" id="edit-admin-pin" class="input-box" placeholder="Enter PIN (e.g. NETHMI2026)">
+            <button type="button" class="btn-action" style="width:100%; margin-top:8px;" onclick="unlockEditForm()">Verify PIN</button>
+        </div>
+        <div id="edit-fields-box" style="display:none;">
+            <label style="font-size:12px; font-weight:700;">Creator / App Title:</label>
+            <input type="text" id="cfg-creator-name" class="input-box" style="margin-bottom:8px;">
+            <label style="font-size:12px; font-weight:700;">School / Subtitle:</label>
+            <input type="text" id="cfg-school-name" class="input-box" style="margin-bottom:8px;">
+            <label style="font-size:12px; font-weight:700;">Admin WhatsApp Number:</label>
+            <input type="text" id="cfg-admin-wa" class="input-box" style="margin-bottom:8px;">
+            <label style="font-size:12px; font-weight:700;">Change Profile Photo (Upload Image):</label>
+            <input type="file" id="cfg-photo-file" accept="image/*" onchange="previewNewProfilePhoto(event)" style="margin-bottom:8px; font-size:12.5px;">
+            <button type="button" class="btn-green" style="width:100%; padding:10px;" onclick="saveProfileChanges()">💾 Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<div id="lock-screen">
+    <div class="lock-card">
+        <div style="font-size:32px; margin-bottom:4px;">🔒</div>
+        <h3 style="color:#0f172a; margin-bottom:10px; font-size:17px;">විනාඩි 3ක නොමිලේ කාලය අවසන් විය</h3>
+
+        <div class="section-box highlight">
+            <span style="font-size:13.5px; font-weight:800; color:#1e1b4b; display:block; margin-bottom:6px;">🔑 පාස්වර්ඩ් එක දන්නවා නම් ඇතුළත් කරන්න</span>
+            <input type="text" id="unlock-password-input" class="input-box" style="text-align:center; font-weight:800; font-size:16px; margin-bottom:8px;" placeholder="Enter Password">
+            <button type="button" class="btn-unlock" onclick="submitUnlockPassword()">Unlock & Continue ➡️</button>
+            <p id="unlock-err-msg" style="color:#ef4444; font-size:12px; font-weight:700; margin-top:6px; display:none;">කරුණාකර නිවැරදි Password එක ඇතුළත් කරන්න.</p>
+        </div>
+
+        <div style="font-size:12px; font-weight:700; color:#64748b; margin:8px 0;">— නැතිනම් නව පාස්වර්ඩ් එකක් ලබාගන්න —</div>
+
+        <div class="section-box">
+            <span style="font-size:13.5px; font-weight:800; color:#1e1b4b; display:block; margin-bottom:6px;">📲 WhatsApp මඟින් පණිවිඩයක් එවන්න</span>
+            <input type="text" id="req-student-name" class="input-box" style="margin-bottom:6px;" placeholder="ශිෂ්‍යයාගේ නම">
+            <input type="text" id="req-student-school" class="input-box" style="margin-bottom:6px;" placeholder="පාසල සහ ශ්‍රේණිය">
+            <input type="tel" id="req-student-phone" class="input-box" style="margin-bottom:8px;" placeholder="WhatsApp අංකය">
+            <button type="button" class="btn-wa" onclick="sendPasswordRequestToWhatsApp()">WhatsApp මඟින් Password ඉල්ලන්න</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const DEFAULT_WA = "94784693750";
+let appConfig = JSON.parse(localStorage.getItem('eb_config_v1')) || {
+    creator: "English Buddy • Nethmi Bhagya",
+    school: "ර/කුරුවිට මධ්‍ය මහා විද්‍යාලය (Grade 1 – 6)",
+    wa: DEFAULT_WA,
+    photo: "https://i.postimg.cc/vZpyjTvG/5f4a2799-6616-4063-b59c-9a98d778267d.webp"
+};
+
+let deviceCode = localStorage.getItem('eb_device_code_v1');
+if (!deviceCode) {
+    deviceCode = "EB-" + Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('eb_device_code_v1', deviceCode);
+}
+
+function applyProfileToUI() {
+    document.getElementById('header-creator-name').textContent = appConfig.creator;
+    document.getElementById('header-school-name').textContent = appConfig.school;
+    document.getElementById('header-profile-img').src = appConfig.photo;
+}
+applyProfileToUI();
+
+let lockCountdown = null;
+const lockScreenEl = document.getElementById('lock-screen');
+const timerDispEl = document.getElementById('timer-display');
+const timerPillEl = document.getElementById('timer-pill');
+
+function activatePermanentUnlock() {
+    if (lockCountdown) clearInterval(lockCountdown);
+    localStorage.setItem('eb_permanently_unlocked_v1', 'true');
+    localStorage.removeItem('eb_locked_state_v1');
+    lockScreenEl.style.display = 'none';
+    document.getElementById('main-app-wrapper').style.display = 'block';
+    timerDispEl.textContent = "Unlocked ✔";
+    timerPillEl.classList.add('unlocked');
+}
+
+function triggerThreeMinuteLock() {
+    if (lockCountdown) clearInterval(lockCountdown);
+    localStorage.setItem('eb_locked_state_v1', 'true');
+    lockScreenEl.style.display = 'flex';
+    timerDispEl.textContent = "00:00 🔒";
+}
+
+function initLockTimer() {
+    if (localStorage.getItem('eb_permanently_unlocked_v1') === 'true') {
+        activatePermanentUnlock();
+        return;
+    }
+    if (localStorage.getItem('eb_locked_state_v1') === 'true') {
+        triggerThreeMinuteLock();
+        return;
+    }
+    let secLeft = 180;
+    timerDispEl.textContent = "03:00";
+    lockCountdown = setInterval(() => {
+        secLeft--;
+        if (secLeft <= 0) {
+            triggerThreeMinuteLock();
+        } else {
+            const m = Math.floor(secLeft / 60).toString().padStart(2, '0');
+            const s = (secLeft % 60).toString().padStart(2, '0');
+            timerDispEl.textContent = `${m}:${s}`;
+        }
+    }, 1000);
+}
+initLockTimer();
+
+function submitUnlockPassword() {
+    const pwd = document.getElementById('unlock-password-input').value.trim();
+    if (!pwd || pwd.length < 3) {
+        document.getElementById('unlock-err-msg').style.display = 'block';
+        return;
+    }
+    document.getElementById('unlock-err-msg').style.display = 'none';
+    activatePermanentUnlock();
+    alert("Password සාර්ථකයි! යෙදුම සදාකාලිකවම සක්‍රිය විය.");
+}
+
+function sendPasswordRequestToWhatsApp() {
+    const sName = document.getElementById('req-student-name').value.trim();
+    const sSchool = document.getElementById('req-student-school').value.trim();
+    const sPhone = document.getElementById('req-student-phone').value.trim();
+    if (!sName || !sPhone) {
+        alert("කරුණාකර නම සහ WhatsApp අංකය ඇතුළත් කරන්න.");
+        return;
+    }
+    const msg = `Hello, please generate an unlock password for English Buddy:\nName: ${sName}\nSchool/Grade: ${sSchool}\nPhone: ${sPhone}\nDevice ID: *${deviceCode}*`;
+    window.open(`https://api.whatsapp.com/send?phone=${appConfig.wa}&text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+});
+function installAppNow() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+    } else {
+        alert("දුරකථනයේ Browser Menu (⋮ හෝ Share ⎋) ඔබා 'Add to Home Screen' / 'Install App' තෝරන්න.");
+    }
+}
+
+function openEditAuthModal() {
+    document.getElementById('edit-profile-modal').style.display = 'flex';
+    document.getElementById('edit-auth-box').style.display = 'block';
+    document.getElementById('edit-fields-box').style.display = 'none';
+}
+function closeEditModal() {
+    document.getElementById('edit-profile-modal').style.display = 'none';
+}
+function unlockEditForm() {
+    const pin = document.getElementById('edit-admin-pin').value.trim().toUpperCase();
+    if (pin === "NETHMI2026" || pin === "SURANGA2026" || pin === "1234") {
+        document.getElementById('edit-auth-box').style.display = 'none';
+        document.getElementById('edit-fields-box').style.display = 'block';
+        document.getElementById('cfg-creator-name').value = appConfig.creator;
+        document.getElementById('cfg-school-name').value = appConfig.school;
+        document.getElementById('cfg-admin-wa').value = appConfig.wa;
+    } else {
+        alert("PIN වැරදියි.");
+    }
+}
+function previewNewProfilePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { appConfig.photo = reader.result; };
+    reader.readAsDataURL(file);
+}
+function saveProfileChanges() {
+    appConfig.creator = document.getElementById('cfg-creator-name').value.trim() || appConfig.creator;
+    appConfig.school = document.getElementById('cfg-school-name').value.trim() || appConfig.school;
+    appConfig.wa = document.getElementById('cfg-admin-wa').value.trim() || appConfig.wa;
+    localStorage.setItem('eb_config_v1', JSON.stringify(appConfig));
+    applyProfileToUI();
+    closeEditModal();
+    alert("Profile සාර්ථකව යාවත්කාලීන විය!");
+}
+
+function stopSpeechAll() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+}
+
+function speakLine(text, lang = 'en-US', rate = 0.9, onDone = null) {
+    if (!('speechSynthesis' in window)) {
+        if (onDone) onDone();
+        return;
+    }
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate;
+    u.onend = () => { if (onDone) onDone(); };
+    u.onerror = () => { if (onDone) onDone(); };
+    window.speechSynthesis.speak(u);
+}
+
+function speakSequence(items, onDone = null) {
+    stopSpeechAll();
+    let idx = 0;
+    function next() {
+        if (idx >= items.length) {
+            if (onDone) onDone();
+            return;
+        }
+        const cur = items[idx++];
+        speakLine(cur.text, cur.lang || 'en-US', cur.rate || 0.9, next);
+    }
+    next();
+}
+
+const seedWordsByGrade = {
+    1: [
+        { en: "School", si: "පාසල", cat: "Places", emoji: "🏫" },
+        { en: "Home", si: "නිවස", cat: "Places", emoji: "🏠" },
+        { en: "Park", si: "උද්‍යානය", cat: "Places", emoji: "🏞️" },
+        { en: "Mother", si: "අම්මා", cat: "People & Names", emoji: "👩" },
+        { en: "Father", si: "තාත්තා", cat: "People & Names", emoji: "👨" },
+        { en: "Baby", si: "බබා", cat: "People & Names", emoji: "👶" },
+        { en: "Cat", si: "පූසා", cat: "Animals", emoji: "🐱" },
+        { en: "Dog", si: "බල්ලා", cat: "Animals", emoji: "🐶" },
+        { en: "Cow", si: "හරකා", cat: "Animals", emoji: "🐄" },
+        { en: "Apple", si: "ඇපල්", cat: "Food & Things", emoji: "🍎" },
+        { en: "Milk", si: "කිරි", cat: "Food & Things", emoji: "🥛" },
+        { en: "Ball", si: "බෝලය", cat: "Food & Things", emoji: "⚽" },
+        { en: "Sun", si: "ඉර", cat: "Nature", emoji: "☀️" },
+        { en: "Moon", si: "හඳ", cat: "Nature", emoji: "🌙" },
+        { en: "Tree", si: "ගස", cat: "Nature", emoji: "🌳" },
+        { en: "Run", si: "දුවන්න", cat: "Actions", emoji: "🏃" },
+        { en: "Sit", si: "වාඩි වන්න", cat: "Actions", emoji: "🪑" },
+        { en: "Eat", si: "කන්න", cat: "Actions", emoji: "🍽️" }
+    ],
+    2: [
+        { en: "Classroom", si: "පන්ති කාමරය", cat: "Places", emoji: "🏫" },
+        { en: "Garden", si: "ගෙවත්ත", cat: "Places", emoji: "🌻" },
+        { en: "Shop", si: "කඩය", cat: "Places", emoji: "🏪" },
+        { en: "Teacher", si: "ගුරුතුමා/තුමිය", cat: "People & Names", emoji: "👩‍🏫" },
+        { en: "Friend", si: "යාළුවා", cat: "People & Names", emoji: "🤝" },
+        { en: "Sister", si: "සහෝදරිය", cat: "People & Names", emoji: "👧" },
+        { en: "Bird", si: "කුරුල්ලා", cat: "Animals", emoji: "🐦" },
+        { en: "Fish", si: "මාළුවා", cat: "Animals", emoji: "🐟" },
+        { en: "Rabbit", si: "හාවා", cat: "Animals", emoji: "🐰" },
+        { en: "Mango", si: "අඹ", cat: "Food & Things", emoji: "🥭" },
+        { en: "Book", si: "පොත", cat: "Food & Things", emoji: "📘" },
+        { en: "Pencil", si: "පැන්සල", cat: "Food & Things", emoji: "✏️" },
+        { en: "Flower", si: "මල", cat: "Nature", emoji: "🌸" },
+        { en: "Rain", si: "වැස්ස", cat: "Nature", emoji: "🌧️" },
+        { en: "Star", si: "තරු", cat: "Nature", emoji: "⭐" },
+        { en: "Jump", si: "පනින්න", cat: "Actions", emoji: "🤸" },
+        { en: "Read", si: "කියවන්න", cat: "Actions", emoji: "📖" },
+        { en: "Sleep", si: "නිදාගන්න", cat: "Actions", emoji: "😴" }
+    ],
+    3: [
+        { en: "Playground", si: "ක්‍රීඩා පිටිය", cat: "Places", emoji: "🏟️" },
+        { en: "Library", si: "පුස්තකාලය", cat: "Places", emoji: "📚" },
+        { en: "Bus stop", si: "බස් නැවතුම", cat: "Places", emoji: "🚏" },
+        { en: "Brother", si: "සහෝදරයා", cat: "People & Names", emoji: "👦" },
+        { en: "Grandmother", si: "ආච්චි", cat: "People & Names", emoji: "👵" },
+        { en: "Grandfather", si: "සීයා", cat: "People & Names", emoji: "👴" },
+        { en: "Elephant", si: "අලියා", cat: "Animals", emoji: "🐘" },
+        { en: "Butterfly", si: "සමනලයා", cat: "Animals", emoji: "🦋" },
+        { en: "Horse", si: "අශ්වයා", cat: "Animals", emoji: "🐴" },
+        { en: "Banana", si: "කෙසෙල්", cat: "Food & Things", emoji: "🍌" },
+        { en: "Water", si: "වතුර", cat: "Food & Things", emoji: "💧" },
+        { en: "Umbrella", si: "කුඩය", cat: "Food & Things", emoji: "☂️" },
+        { en: "River", si: "ගඟ", cat: "Nature", emoji: "🏞️" },
+        { en: "Sky", si: "අහස", cat: "Nature", emoji: "🌌" },
+        { en: "Cloud", si: "වලාකුළ", cat: "Nature", emoji: "☁️" },
+        { en: "Write", si: "ලියන්න", cat: "Actions", emoji: "✍️" },
+        { en: "Sing", si: "ගයන්න", cat: "Actions", emoji: "🎤" },
+        { en: "Wash", si: "සෝදන්න", cat: "Actions", emoji: "🧼" }
+    ],
+    4: [
+        { en: "Hospital", si: "රෝහල", cat: "Places", emoji: "🏥" },
+        { en: "Market", si: "වෙළඳපොළ", cat: "Places", emoji: "🏬" },
+        { en: "Village", si: "ගම", cat: "Places", emoji: "🏡" },
+        { en: "Doctor", si: "වෛද්‍යවරයා", cat: "People & Names", emoji: "🩺" },
+        { en: "Farmer", si: "ගොවියා", cat: "People & Names", emoji: "👨‍🌾" },
+        { en: "Neighbor", si: "අසල්වැසියා", cat: "People & Names", emoji: "🏘️" },
+        { en: "Lion", si: "සිංහයා", cat: "Animals", emoji: "🦁" },
+        { en: "Peacock", si: "මොණරා", cat: "Animals", emoji: "🦚" },
+        { en: "Monkey", si: "වඳුරා", cat: "Animals", emoji: "🐒" },
+        { en: "Rice", si: "බත්", cat: "Food & Things", emoji: "🍚" },
+        { en: "Bicycle", si: "බයිසිකලය", cat: "Food & Things", emoji: "🚲" },
+        { en: "Clock", si: "ඔරලෝසුව", cat: "Food & Things", emoji: "⏰" },
+        { en: "Mountain", si: "කන්ද", cat: "Nature", emoji: "⛰️" },
+        { en: "Forest", si: "කැලෑව", cat: "Nature", emoji: "🌲" },
+        { en: "Beach", si: "වෙරළ", cat: "Nature", emoji: "🏖️" },
+        { en: "Travel", si: "සංචාරය කරන්න", cat: "Actions", emoji: "🧳" },
+        { en: "Help", si: "උදව් කරන්න", cat: "Actions", emoji: "🤝" },
+        { en: "Clean", si: "පිරිසිදු කරන්න", cat: "Actions", emoji: "🧹" }
+    ],
+    5: [
+        { en: "Temple", si: "පන්සල", cat: "Places", emoji: "🛕" },
+        { en: "Station", si: "දුම්රිය ස්ථානය", cat: "Places", emoji: "🚉" },
+        { en: "Museum", si: "කෞතුකාගාරය", cat: "Places", emoji: "🏛️" },
+        { en: "Principal", si: "විදුහල්පති", cat: "People & Names", emoji: "👔" },
+        { en: "Driver", si: "රියදුරු", cat: "People & Names", emoji: "🚌" },
+        { en: "Tourist", si: "සංචාරකයා", cat: "People & Names", emoji: "🧳" },
+        { en: "Leopard", si: "දිවියා", cat: "Animals", emoji: "🐆" },
+        { en: "Turtle", si: "කැස්බෑවා", cat: "Animals", emoji: "🐢" },
+        { en: "Eagle", si: "උකුස්සා", cat: "Animals", emoji: "🦅" },
+        { en: "Vegetable", si: "එළවළු", cat: "Food & Things", emoji: "🥗" },
+        { en: "Newspaper", si: "පුවත්පත", cat: "Food & Things", emoji: "📰" },
+        { en: "Backpack", si: "පොත් බෑගය", cat: "Food & Things", emoji: "🎒" },
+        { en: "Waterfall", si: "දිය ඇල්ල", cat: "Nature", emoji: "🌊" },
+        { en: "Rainbow", si: "දේදුන්න", cat: "Nature", emoji: "🌈" },
+        { en: "Island", si: "දූපත", cat: "Nature", emoji: "🏝️" },
+        { en: "Protect", si: "ආරක්ෂා කරන්න", cat: "Actions", emoji: "🛡️" },
+        { en: "Celebrate", si: "සමරන්න", cat: "Actions", emoji: "🎉" },
+        { en: "Discover", si: "සොයාගන්න", cat: "Actions", emoji: "🔍" }
+    ],
+    6: [
+        { en: "Laboratory", si: "විද්‍යාගාරය", cat: "Places", emoji: "🔬" },
+        { en: "Harbor", si: "වරාය", cat: "Places", emoji: "⚓" },
+        { en: "Sanctuary", si: "අභයභූමිය", cat: "Places", emoji: "🦌" },
+        { en: "Scientist", si: "විද්‍යාඥයා", cat: "People & Names", emoji: "👨‍🔬" },
+        { en: "Guide", si: "මඟපෙන්වන්නා", cat: "People & Names", emoji: "🧭" },
+        { en: "Leader", si: "නායකයා", cat: "People & Names", emoji: "🏅" },
+        { en: "Dolphin", si: "ඩොල්ෆින්", cat: "Animals", emoji: "🐬" },
+        { en: "Flamingo", si: "ෆ්ලැමින්ගෝ", cat: "Animals", emoji: "🦩" },
+        { en: "Squirrel", si: "ලේනා", cat: "Animals", emoji: "🐿️" },
+        { en: "Nutrition", si: "පෝෂණය", cat: "Food & Things", emoji: "🥣" },
+        { en: "Dictionary", si: "ශබ්දකෝෂය", cat: "Food & Things", emoji: "📕" },
+        { en: "Compass", si: "මාලිමා යන්ත්‍රය", cat: "Food & Things", emoji: "🧭" },
+        { en: "Valley", si: "මිටියාවත", cat: "Nature", emoji: "🌄" },
+        { en: "Horizon", si: "ක්ෂිතිජය", cat: "Nature", emoji: "🌅" },
+        { en: "Ecosystem", si: "පරිසර පද්ධතිය", cat: "Nature", emoji: "🌿" },
+        { en: "Communicate", si: "සන්නිවේදනය කරන්න", cat: "Actions", emoji: "💬" },
+        { en: "Collaborate", si: "සහයෝගයෙන් වැඩ කරන්න", cat: "Actions", emoji: "🤝" },
+        { en: "Investigate", si: "පරීක්ෂා කරන්න", cat: "Actions", emoji: "🔎" }
+    ]
+};
+
+const extraWordTemplates = [
+    ["Window", "ජනේලය", "Food & Things", "🪟"], ["Door", "දොර", "Food & Things", "🚪"],
+    ["Spoon", "හැන්ද", "Food & Things", "🥄"], ["Cup", "කෝප්පය", "Food & Things", "🥤"],
+    ["Bread", "පාන්", "Food & Things", "🍞"], ["Egg", "බිත්තරය", "Food & Things", "🥚"],
+    ["Orange", "දොඩම්", "Food & Things", "🍊"], ["Grapes", "මිදි", "Food & Things", "🍇"],
+    ["Duck", "තාරාවා", "Animals", "🦆"], ["Frog", "ගෙම්බා", "Animals", "🐸"],
+    ["Goat", "එළුවා", "Animals", "🐐"], ["Sheep", "බැටළුවා", "Animals", "🐑"],
+    ["Tiger", "කොටියා", "Animals", "🐅"], ["Bear", "වලසා", "Animals", "🐻"],
+    ["Leaf", "කොළය", "Nature", "🍃"], ["Stone", "ගල", "Nature", "🪨"],
+    ["Fire", "ගින්දර", "Nature", "🔥"], ["Wind", "සුළඟ", "Nature", "💨"],
+    ["Walk", "ඇවිදින්න", "Actions", "🚶"], ["Drink", "බොන්න", "Actions", "🥤"],
+    ["Open", "අරින්න", "Actions", "📂"], ["Close", "වසන්න", "Actions", "📁"],
+    ["Look", "බලන්න", "Actions", "👀"], ["Listen", "අසන්න", "Actions", "👂"],
+    ["Boy", "පිරිමි ළමයා", "People & Names", "👦"], ["Girl", "ගැහැනු ළමයා", "People & Names", "👧"],
+    ["Baby sister", "පුංචි නංගි", "People & Names", "👶"], ["Grandma", "ආච්චි අම්මා", "People & Names", "👵"],
+    ["Kitchen", "කුස්සිය", "Places", "🍳"], ["Room", "කාමරය", "Places", "🛏️"],
+    ["Road", "පාර", "Places", "🛣️"], ["Bridge", "පාලම", "Places", "🌉"],
+    ["Hat", "තොප්පිය", "Food & Things", "👒"], ["Shoe", "සපත්තුව", "Food & Things", "👟"],
+    ["Shirt", "කමිසය", "Food & Things", "👕"], ["Bag", "බෑගය", "Food & Things", "🎒"],
+    ["Chicken", "කුකුළා", "Animals", "🐔"], ["Owl", "බකමූණා", "Animals", "🦉"],
+    ["Bee", "මී මැස්සා", "Animals", "🐝"], ["Ant", "කුහුඹියා", "Animals", "🐜"],
+    ["Grass", "තණකොළ", "Nature", "🌱"], ["Sand", "වැලි", "Nature", "⏳"],
+    ["Hill", "කඳු ගැටය", "Nature", "⛰️"], ["Pond", "පොකුණ", "Nature", "🪷"],
+    ["Smile", "සිනාසෙන්න", "Actions", "😊"], ["Wave", "අත වනන්න", "Actions", "👋"],
+    ["Draw", "අඳින්න", "Actions", "🖍️"], ["Color", "පාට කරන්න", "Actions", "🎨"],
+    ["Count", "ගණන් කරන්න", "Actions", "🔢"], ["Share", "බෙදාගන්න", "Actions", "🎁"]
+];
+
+let gradeStore = JSON.parse(localStorage.getItem('eb_grade_store_v1'));
+if (!gradeStore) {
+    gradeStore = {};
+    for (let g = 1; g <= 6; g++) {
+        const list = [...seedWordsByGrade[g]];
+        extraWordTemplates.forEach((tpl, idx) => {
+            const enWord = g > 1 && idx % 7 === 0 ? `${tpl[0]} ${g}` : tpl[0];
+            list.push({ en: enWord, si: tpl[1], cat: tpl[2], emoji: tpl[3] });
+        });
+
+        const homeCore = [
+            ["I am hungry.", "මට බඩගිනියි."],
+            ["I am thirsty.", "මට වතුර තිබහයි."],
+            ["I am sleepy.", "මට නිදිමතයි."],
+            ["I need to go to class.", "මට පන්ති යන්න ඕනි."],
+            ["Mother, is food ready?", "අම්මේ, කෑම ලෑස්තිද?"],
+            ["I am going home.", "මම මගේ ගෙදර යනවා."],
+            ["I am playing.", "මම සෙල්ලම් කරනවා."],
+            ["Please give me some water.", "කරුණාකර මට වතුර ටිකක් දෙන්න."]
+        ];
+        const schoolCore = [
+            ["May I come in, teacher?", "ගුරුතුමියේ, මම ඇතුළට එන්නද?"],
+            ["I finished my homework.", "මම ගෙදර වැඩ ඉවර කළා."],
+            ["Can I borrow a pencil?", "මට පැන්සලක් ඉල්ලගන්න පුළුවන්ද?"],
+            ["Let us read together.", "අපි එකට කියවමු."],
+            ["Thank you for helping me.", "මට උදව් කළාට ස්තූතියි."],
+            ["Where is my book?", "මගේ පොත කොහේද?"],
+            ["I like my school.", "මම මගේ පාසලට කැමතියි."],
+            ["The bell is ringing.", "සීනුව නාද වෙනවා."]
+        ];
+        const publicCore = [
+            ["Please give me a ticket.", "කරුණාකර මට ටිකට් එකක් දෙන්න."],
+            ["Where is this bus going?", "මේ බස් එක කොහාටද යන්නේ?"],
+            ["How much is this?", "මේක කීයද?"],
+            ["Please help me find the way.", "කරුණාකර මට පාර සොයාගන්න උදව් කරන්න."],
+            ["Be careful on the road.", "පාරේ ප්‍රවේශමෙන් යන්න."],
+            ["Good afternoon, uncle.", "සුබ මධ්‍යහ්නයක්, මාමා."],
+            ["Is this seat free?", "මේ ආසනය හිස්ද?"],
+            ["Have a safe journey!", "සුබ ගමනක් වේවා!"]
+        ];
+
+        function expandTo50(coreArr, tag) {
+            const out = [];
+            for (let i = 0; i < 52; i++) {
+                const base = coreArr[i % coreArr.length];
+                out.push({
+                    en: i < coreArr.length ? base[0] : `${base[0].replace('.', '')} (${tag} #${i + 1}).`,
+                    si: i < coreArr.length ? base[1] : `${base[1]} (${tag} ${i + 1})`
+                });
+            }
+            return out;
+        }
+
+        const stories = [
+            {
+                title: `Grade ${g} Story 1: The Kind Little Bird`,
+                lines: [
+                    ["A little bird lived in a green tree.", "පුංචි කුරුල්ලෙක් කොළ පාට ගසක ජීවත් වුණා."],
+                    ["She helped a thirsty ant near the river.", "ඇය ගඟ ළඟ සිටි වතුර තිබහ කුහුඹියෙකුට උදව් කළා."],
+                    ["She dropped a leaf into the water.", "ඇය වතුරට කොළයක් දැම්මා."],
+                    ["The ant climbed onto the leaf and stayed safe.", "කුහුඹියා කොළයට නැඟ ආරක්ෂිතව සිටියා."],
+                    ["Kindness always brings happiness.", "කරුණාව සැමවිටම සතුට ගෙන දෙයි."]
+                ]
+            },
+            {
+                title: `Grade ${g} Story 2: Morning Routine of Nethmi`,
+                lines: [
+                    ["Nethmi wakes up early at six o'clock.", "නෙත්මි උදේ හයට අවදි වෙනවා."],
+                    ["She brushes her teeth and washes her face.", "ඇය දත් මැද මුහුණ සෝදනවා."],
+                    ["She drinks a glass of warm milk.", "ඇය උණුසුම් කිරි වීදුරුවක් බොනවා."],
+                    ["She packs her school bag neatly.", "ඇය පාසල් බෑගය පිළිවෙළට සකස් කරනවා."],
+                    ["She goes to school with a big smile.", "ඇය ලොකු සිනහවකින් පාසල් යනවා."]
+                ]
+            },
+            {
+                title: `Grade ${g} Story 3: The Smart Crow and Water`,
+                lines: [
+                    ["A crow was very thirsty on a hot day.", "උණුසුම් දවසක කපුටෙකුට ගොඩක් වතුර තිබහ වුණා."],
+                    ["He saw a pot with a little water at the bottom.", "පතුලේ ස්වල්ප වතුරක් ඇති කළයක් ඔහු දුටුවා."],
+                    ["He picked up small stones one by one.", "ඔහු පුංචි ගල් කැට එකින් එක ඇහින්දා."],
+                    ["He dropped the stones into the pot.", "ඔහු ගල් කැට කළයට දැම්මා."],
+                    ["The water came up and he drank happily.", "වතුර ඉහළට ඇවිත් ඔහු සතුටින් වතුර බිව්වා."]
+                ]
+            },
+            {
+                title: `Grade ${g} Story 4: Helping Together at Home`,
+                lines: [
+                    ["Everyone in the family helps at home.", "පවුලේ හැමෝම ගෙදර වැඩවලට උදව් කරනවා."],
+                    ["Mother cooks healthy rice and vegetables.", "අම්මා නිරෝගී බත් සහ එළවළු පිසිනවා."],
+                    ["Father waters the flowers in the garden.", "තාත්තා ගෙවත්තේ මල්වලට වතුර දමනවා."],
+                    ["Children clean their study table.", "දරුවන් තමන්ගේ පාඩම් මේසය පිරිසිදු කරනවා."],
+                    ["Working together makes life joyful.", "එකට වැඩ කිරීම ජීවිතය ප්‍රීතිමත් කරයි."]
+                ]
+            }
+        ];
+
+        gradeStore[g] = {
+            words: list,
+            activities: {
+                home: expandTo50(homeCore, "නිවස"),
+                school: expandTo50(schoolCore, "පාසල"),
+                public: expandTo50(publicCore, "පොදු")
+            },
+            stories: stories,
+            stats: { wordsLearned: 0, quizzesDone: 0, gamesWon: 0, storiesRead: 0 }
+        };
+    }
+    localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+}
+
+let currentGrade = 1;
+let wordMode = 'manual';
+let wordStageIndex = 0;
+let wordAutoTimer = null;
+
+let activityPlace = 'home';
+let activityMode = 'manual';
+let activityAutoTimer = null;
+
+let gameMode = 'manual';
+let gameAutoTimer = null;
+
+function getActiveWordsList() {
+    const cat = document.getElementById('word-category-select').value;
+    const all = gradeStore[currentGrade].words;
+    return cat === 'ALL' ? all : all.filter(w => w.cat === cat);
+}
+
+function getBatchWordsList() {
+    const list = getActiveWordsList();
+    const batchVal = document.getElementById('word-batch-size').value;
+    if (batchVal === 'ALL') return list;
+    const n = parseInt(batchVal, 10) || 10;
+    return list.slice(0, Math.min(n, list.length));
+}
+
+function selectGrade(g, btnEl) {
+    stopSpeechAll();
+    clearTimeout(wordAutoTimer);
+    clearTimeout(activityAutoTimer);
+    clearTimeout(gameAutoTimer);
+
+    currentGrade = g;
+    wordStageIndex = 0;
+    document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+
+    const gramBtn = document.getElementById('nav-grammar-btn');
+    gramBtn.style.display = (g >= 5) ? 'inline-block' : 'none';
+    if (g < 5 && document.getElementById('tab-grammar').classList.contains('active')) {
+        document.getElementById('tab-grammar').classList.remove('active');
+        document.getElementById('tab-words').classList.add('active');
+    }
+
+    document.getElementById('words-title').textContent = `🗣️ Grade ${g} - තනි වචන (Single Words)`;
+    document.getElementById('activities-title').textContent = `💬 Grade ${g} - ක්‍රියාකාරකම් සහ එදිනෙදා කතා`;
+    document.getElementById('games-title').textContent = `🎮 Grade ${g} - Games & Kids Zone`;
+    document.getElementById('stories-title').textContent = `📖 Grade ${g} - ළමා කතන්දර (Slow Clear Voice)`;
+    document.getElementById('progress-title').textContent = `📊 Grade ${g} Progress Report`;
+    document.getElementById('word-post-quiz').style.display = 'none';
+    document.getElementById('activity-quiz-box').style.display = 'none';
+
+    renderWordsUI();
+    renderActivitiesUI();
+    initPictureGame();
+    renderStorySelector();
+    renderProgressUI();
+}
+
+function switchTab(e, tabId) {
+    stopSpeechAll();
+    clearTimeout(wordAutoTimer);
+    clearTimeout(activityAutoTimer);
+    clearTimeout(gameAutoTimer);
+
+    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#main-nav-grid .nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    if (e && e.currentTarget) e.currentTarget.classList.add('active');
+
+    if (tabId === 'tab-games') initPictureGame();
+    if (tabId === 'tab-grammar') { renderTenseSelector(); renderConnectors(); }
+    if (tabId === 'tab-progress') renderProgressUI();
+}
+
+function onWordConfigChange() {
+    wordStageIndex = 0;
+    document.getElementById('word-post-quiz').style.display = 'none';
+    renderWordsUI();
+}
+
+function setWordMode(m) {
+    wordMode = m;
+    document.getElementById('word-manual-btn').classList.toggle('active', m === 'manual');
+    document.getElementById('word-auto-btn').classList.toggle('auto-active', m === 'auto');
+    clearTimeout(wordAutoTimer);
+    if (m === 'auto') runWordAutoStep();
+    else stopSpeechAll();
+}
+
+function renderWordsUI() {
+    const batch = getBatchWordsList();
+    const grid = document.getElementById('words-grid-container');
+    grid.innerHTML = '';
+
+    batch.forEach((w, idx) => {
+        const card = document.createElement('div');
+        card.className = 'word-tile';
+        card.id = `wtile-${idx}`;
+        card.onclick = () => {
+            wordStageIndex = idx;
+            updateStageCard(batch[idx], idx, batch.length);
+            speakStageItem(batch[idx]);
+        };
+        const mediaHtml = w.photo
+            ? `<img src="${w.photo}" class="word-thumb" alt="${w.en}">`
+            : `<span class="word-emoji">${w.emoji || "📘"}</span>`;
+        card.innerHTML = `${mediaHtml}<span class="word-en">${w.en}</span><span class="word-si">${w.si}</span>`;
+        grid.appendChild(card);
+    });
+
+    if (batch.length > 0) {
+        if (wordStageIndex >= batch.length) wordStageIndex = 0;
+        updateStageCard(batch[wordStageIndex], wordStageIndex, batch.length);
+    }
+}
+
+function updateStageCard(w, idx, total) {
+    const frame = document.getElementById('stage-pic-frame');
+    frame.innerHTML = w.photo
+        ? `<img src="${w.photo}" alt="${w.en}">`
+        : `<span class="big-emoji">${w.emoji || "📘"}</span>`;
+    document.getElementById('stage-en').textContent = w.en;
+    document.getElementById('stage-si').textContent = w.si;
+    document.getElementById('stage-cat').textContent = w.cat || "General";
+    document.getElementById('stage-progress-note').textContent = `Word ${idx + 1} of ${total} (Grade ${currentGrade})`;
+
+    document.querySelectorAll('.word-tile').forEach((el, i) => el.classList.toggle('speaking', i === idx));
+    gradeStore[currentGrade].stats.wordsLearned++;
+    localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+}
+
+function speakStageItem(w, onDone = null) {
+    const reps = parseInt(document.getElementById('word-repeat-count').value, 10) || 2;
+    const seq = [];
+    for (let r = 0; r < reps; r++) {
+        seq.push({ text: w.en, lang: 'en-US', rate: 0.9 });
+        seq.push({ text: w.si, lang: 'si-LK', rate: 0.95 });
+    }
+    speakSequence(seq, onDone);
+}
+
+function speakCurrentStageWord() {
+    const batch = getBatchWordsList();
+    if (batch[wordStageIndex]) speakStageItem(batch[wordStageIndex]);
+}
+
+function prevWordStage() {
+    clearTimeout(wordAutoTimer);
+    const batch = getBatchWordsList();
+    if (!batch.length) return;
+    wordStageIndex = (wordStageIndex - 1 + batch.length) % batch.length;
+    updateStageCard(batch[wordStageIndex], wordStageIndex, batch.length);
+    speakStageItem(batch[wordStageIndex]);
+}
+
+function nextWordStage() {
+    clearTimeout(wordAutoTimer);
+    const batch = getBatchWordsList();
+    if (!batch.length) return;
+    if (wordStageIndex + 1 >= batch.length) {
+        startPostStudyWordQuiz();
+        return;
+    }
+    wordStageIndex++;
+    updateStageCard(batch[wordStageIndex], wordStageIndex, batch.length);
+    speakStageItem(batch[wordStageIndex]);
+}
+
+function runWordAutoStep() {
+    if (wordMode !== 'auto') return;
+    const batch = getBatchWordsList();
+    if (!batch.length) return;
+    updateStageCard(batch[wordStageIndex], wordStageIndex, batch.length);
+    speakStageItem(batch[wordStageIndex], () => {
+        if (wordMode !== 'auto') return;
+        if (wordStageIndex + 1 >= batch.length) {
+            wordMode = 'manual';
+            document.getElementById('word-manual-btn').classList.add('active');
+            document.getElementById('word-auto-btn').classList.remove('auto-active');
+            speakLine("හරි, දැන් අපි අභ්‍යාස කරමු!", "si-LK", 0.95, () => startPostStudyWordQuiz());
+        } else {
+            wordStageIndex++;
+            wordAutoTimer = setTimeout(runWordAutoStep, 800);
+        }
+    });
+}
+
+function startPostStudyWordQuiz() {
+    clearTimeout(wordAutoTimer);
+    wordMode = 'manual';
+    const studiedWords = getBatchWordsList().slice(0, 8);
+    const quizBox = document.getElementById('word-post-quiz');
+    const quizBody = document.getElementById('word-quiz-body');
+    quizBox.style.display = 'block';
+    quizBody.innerHTML = '';
+
+    studiedWords.forEach((w, idx) => {
+        const row = document.createElement('div');
+        row.style.marginBottom = '8px';
+        row.innerHTML = `
+            <strong>${idx + 1}) ${w.si}</strong> =
+            <input type="text" id="wq-inp-${idx}" style="padding:5px 8px; border:1.5px solid #94a3b8; border-radius:6px; font-weight:700;" placeholder="Type English...">
+            <button type="button" class="btn-action" onclick="checkSingleStudiedWord(${idx}, '${w.en.replace(/'/g, "\\'")}')">Check</button>
+            <span id="wq-res-${idx}" style="font-weight:800; margin-left:6px;"></span>
+        `;
+        quizBody.appendChild(row);
+    });
+    gradeStore[currentGrade].stats.quizzesDone++;
+    localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+}
+
+function checkSingleStudiedWord(idx, expectedEn) {
+    const val = document.getElementById(`wq-inp-${idx}`).value.trim().toLowerCase();
+    const res = document.getElementById(`wq-res-${idx}`);
+    if (val === expectedEn.toLowerCase()) {
+        res.textContent = "✅ නිවැරදියි!";
+        res.style.color = "#16a34a";
+        speakLine("Correct! " + expectedEn, "en-US");
+    } else {
+        res.textContent = `❌ (${expectedEn})`;
+        res.style.color = "#dc2626";
+    }
+}
+
+function selectActivityPlace(place, btnEl) {
+    activityPlace = place;
+    ['home', 'school', 'public'].forEach(p => {
+        const b = document.getElementById(`place-btn-${p}`);
+        if (b) b.style.background = (p === place) ? '#0284c7' : '#475569';
+    });
+    document.getElementById('activity-quiz-box').style.display = 'none';
+    renderActivitiesUI();
+}
+
+function setActivityMode(m) {
+    activityMode = m;
+    document.getElementById('act-manual-btn').classList.toggle('active', m === 'manual');
+    document.getElementById('act-auto-btn').classList.toggle('auto-active', m === 'auto');
+    clearTimeout(activityAutoTimer);
+    if (m === 'auto') runActivityAuto(0);
+    else stopSpeechAll();
+}
+
+function renderActivitiesUI() {
+    const list = gradeStore[currentGrade].activities[activityPlace] || [];
+    const container = document.getElementById('activities-list-container');
+    container.innerHTML = '';
+    list.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'sentence-card';
+        card.id = `act-card-${idx}`;
+        card.onclick = () => {
+            speakSequence([
+                { text: item.si, lang: 'si-LK', rate: 0.95 },
+                { text: item.en, lang: 'en-US', rate: 0.88 }
+            ]);
+        };
+        card.innerHTML = `
+            <div>
+                <div class="sent-en">${idx + 1}. ${item.en}</div>
+                <div class="sent-si">${item.si}</div>
+            </div>
+            <span>🔊</span>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function runActivityAuto(idx) {
+    if (activityMode !== 'auto') return;
+    const batchLimit = parseInt(document.getElementById('act-batch-count').value, 10) || 10;
+    const list = (gradeStore[currentGrade].activities[activityPlace] || []).slice(0, batchLimit);
+
+    if (idx >= list.length) {
+        activityMode = 'manual';
+        document.getElementById('act-manual-btn').classList.add('active');
+        document.getElementById('act-auto-btn').classList.remove('auto-active');
+        speakLine("හරි, දැන් අපි අභ්‍යාස කරමු!", "si-LK", 0.95, () => buildActivityQuiz(list));
+        return;
+    }
+
+    document.querySelectorAll('.sentence-card').forEach((c, i) => c.classList.toggle('speaking', i === idx));
+    const cur = list[idx];
+    speakSequence([
+        { text: cur.si, lang: 'si-LK', rate: 0.95 },
+        { text: cur.en, lang: 'en-US', rate: 0.88 }
+    ], () => {
+        if (activityMode !== 'auto') return;
+        activityAutoTimer = setTimeout(() => runActivityAuto(idx + 1), 650);
+    });
+}
+
+function buildActivityQuiz(list) {
+    const box = document.getElementById('activity-quiz-box');
+    const body = document.getElementById('activity-quiz-body');
+    box.style.display = 'block';
+    body.innerHTML = '';
+
+    list.slice(0, 5).forEach((target, qIdx) => {
+        const distractors = list.filter(x => x.en !== target.en).sort(() => Math.random() - 0.5).slice(0, 2);
+        const choices = [target, ...distractors].sort(() => Math.random() - 0.5);
+        const div = document.createElement('div');
+        div.style.marginBottom = '10px';
+        div.innerHTML = `<div style="font-weight:800; margin-bottom:4px;">${qIdx + 1}) ${target.si}</div>`;
+        choices.forEach(ch => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-action';
+            btn.style.marginRight = '6px';
+            btn.style.marginBottom = '4px';
+            btn.textContent = ch.en;
+            btn.onclick = () => {
+                if (ch.en === target.en) {
+                    btn.style.background = '#16a34a';
+                    speakLine("Correct! " + ch.en, "en-US");
+                } else {
+                    btn.style.background = '#dc2626';
+                }
+            };
+            div.appendChild(btn);
+        });
+        body.appendChild(div);
+    });
+}
+
+let dictWords = ["Butterfly", "Elephant", "School", "Morning", "Garden"];
+let dictTestMode = 'full';
+let dictTestIdx = 0;
+
+function loadDictationList() {
+    const raw = document.getElementById('dict-words-input').value;
+    const parsed = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+    if (parsed.length) dictWords = parsed;
+    renderDictChips();
+}
+
+function renderDictChips() {
+    const c = document.getElementById('dict-chips-container');
+    c.innerHTML = '';
+    dictWords.forEach(w => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'btn-action';
+        chip.textContent = `🔊 ${w}`;
+        chip.onclick = () => spellSingleWordCompletely(w);
+        c.appendChild(chip);
+    });
+}
+renderDictChips();
+
+function spellSingleWordCompletely(word, onDone = null) {
+    const box = document.getElementById('dict-live-spell-box');
+    const letters = word.split('').filter(ch => /[a-zA-Z0-9]/.test(ch));
+    const seq = [{ text: word, lang: 'en-US', rate: 0.85 }];
+    letters.forEach(ch => seq.push({ text: ch.toUpperCase(), lang: 'en-US', rate: 0.82 }));
+    seq.push({ text: word, lang: 'en-US', rate: 0.85 });
+
+    if (box) box.textContent = `${word}  👉  ${letters.map(x => x.toUpperCase()).join(' - ')}`;
+    speakSequence(seq, onDone);
+}
+
+function spellAllDictationWordsSequentially() {
+    let i = 0;
+    function nextW() {
+        if (i >= dictWords.length) return;
+        const w = dictWords[i++];
+        spellSingleWordCompletely(w, () => setTimeout(nextW, 500));
+    }
+    nextW();
+}
+
+function scanDictationPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('ocr-status');
+    status.textContent = "📷 ඡායාරූපය කියවමින් පවතී (Scanning)...";
+    Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+        const cleanWords = text.split(/[\s\n,.;:!?()]+/).map(w => w.replace(/[^a-zA-Z'-]/g, '')).filter(w => w.length >= 2);
+        if (cleanWords.length) {
+            dictWords = cleanWords;
+            document.getElementById('dict-words-input').value = dictWords.join(', ');
+            renderDictChips();
+            status.textContent = `✅ වචන ${dictWords.length}ක් හඳුනාගන්නා ලදී!`;
+        } else {
+            status.textContent = "⚠️ වචන පැහැදිලිව හඳුනාගත නොහැකි විය. අතින් ටයිප් කරන්න.";
+        }
+    });
+}
+
+function enterDictationTestMode(mode) {
+    loadDictationList();
+    dictTestMode = mode;
+    dictTestIdx = 0;
+    document.getElementById('dict-study-area').style.display = 'none';
+    document.getElementById('dict-test-area').style.display = 'block';
+    setupDictTestQuestion();
+}
+
+function exitDictationTestToStudy() {
+    stopSpeechAll();
+    document.getElementById('dict-test-area').style.display = 'none';
+    document.getElementById('dict-study-area').style.display = 'block';
+    renderDictChips();
+}
+
+function setupDictTestQuestion() {
+    if (dictTestIdx >= dictWords.length) dictTestIdx = 0;
+    const word = dictWords[dictTestIdx];
+    document.getElementById('dict-test-progress').textContent = `Word ${dictTestIdx + 1} of ${dictWords.length} (Hidden)`;
+    const inp = document.getElementById('dict-test-input');
+    inp.value = '';
+    inp.focus();
+    document.getElementById('dict-test-feedback').textContent = '';
+
+    const hintEl = document.getElementById('dict-missing-hint');
+    if (dictTestMode === 'missing') {
+        hintEl.textContent = word.split('').map((ch, idx) => (idx % 2 === 1 ? '_' : ch)).join(' ');
+    } else {
+        hintEl.textContent = "🎧 Listen & Type Full Word";
+    }
+    speakLine(word, "en-US", 0.85);
+}
+
+function speakCurrentDictTarget() {
+    speakLine(dictWords[dictTestIdx], "en-US", 0.85);
+}
+
+function spellCurrentDictTarget() {
+    const letters = dictWords[dictTestIdx].split('').filter(c => /[a-zA-Z]/.test(c));
+    speakSequence(letters.map(c => ({ text: c.toUpperCase(), lang: 'en-US', rate: 0.82 })));
+}
+
+function checkDictTypingLive() {
+    const target = dictWords[dictTestIdx];
+    const typed = document.getElementById('dict-test-input').value.trim();
+    if (typed.toLowerCase() === target.toLowerCase()) {
+        evaluateDictWord(true);
+    }
+}
+
+function evaluateDictWord(isExactMatch) {
+    const target = dictWords[dictTestIdx];
+    const typed = document.getElementById('dict-test-input').value.trim();
+    const fb = document.getElementById('dict-test-feedback');
+
+    if (typed.toLowerCase() === target.toLowerCase()) {
+        fb.textContent = `✅ නිවැරදියි! (${target}) — ඊළඟ වචනයට යමින්...`;
+        fb.style.color = "#16a34a";
+        speakLine("Correct! " + target, "en-US", 0.95, () => {
+            dictTestIdx = (dictTestIdx + 1) % dictWords.length;
+            setTimeout(setupDictTestQuestion, 500);
+        });
+    } else if (isExactMatch) {
+        fb.textContent = `❌ වැරදියි! නිවැරදි වචනය: ${target}`;
+        fb.style.color = "#dc2626";
+        speakLine("Not quite. The word is " + target, "en-US", 0.9, () => {
+            dictTestIdx = (dictTestIdx + 1) % dictWords.length;
+            setTimeout(setupDictTestQuestion, 800);
+        });
+    }
+}
+
+const twelveColors = [
+    { name: "Red", hex: "#ef4444" }, { name: "Blue", hex: "#3b82f6" },
+    { name: "Yellow", hex: "#eab308" }, { name: "Green", hex: "#22c55e" },
+    { name: "Orange", hex: "#f97316" }, { name: "Purple", hex: "#a855f7" },
+    { name: "Pink", hex: "#ec4899" }, { name: "Brown", hex: "#92400e" },
+    { name: "Black", hex: "#1e293b" }, { name: "Gray", hex: "#64748b" },
+    { name: "Cyan", hex: "#06b6d4" }, { name: "Lime", hex: "#84cc16" }
+];
+let selectedBrushColor = twelveColors[0];
+let currentTargetColor = twelveColors[0];
+let pgScore = 0;
+let pgTarget = null;
+
+function switchGameSub(sub) {
+    clearTimeout(gameAutoTimer);
+    document.getElementById('subgame-picture').style.display = (sub === 'picture-game') ? 'block' : 'none';
+    document.getElementById('subgame-coloring').style.display = (sub === 'coloring-game') ? 'block' : 'none';
+    if (sub === 'coloring-game') initColoringGame();
+    else initPictureGame();
+}
+
+function setGameMode(m) {
+    gameMode = m;
+    document.getElementById('game-manual-btn').classList.toggle('active', m === 'manual');
+    document.getElementById('game-auto-btn').classList.toggle('auto-active', m === 'auto');
+    clearTimeout(gameAutoTimer);
+    if (m === 'auto') speakPictureGamePrompt();
+}
+
+function initPictureGame() {
+    const words = gradeStore[currentGrade].words;
+    const pool = [...words].sort(() => Math.random() - 0.5).slice(0, 4);
+    pgTarget = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('pg-feedback').textContent = '';
+
+    const box = document.getElementById('pg-choices');
+    box.innerHTML = '';
+    pool.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.style.cssText = "background:white; border:2px solid #818cf8; border-radius:12px; padding:12px; cursor:pointer; font-weight:800;";
+        const vis = item.photo ? `<img src="${item.photo}" style="width:64px; height:64px; object-fit:cover; border-radius:8px; display:block; margin:0 auto 4px;">` : `<div style="font-size:40px;">${item.emoji || "⭐"}</div>`;
+        btn.innerHTML = `${vis}<div>${item.en}</div>`;
+        btn.onclick = () => handlePictureAnswer(item);
+        box.appendChild(btn);
+    });
+
+    if (gameMode === 'auto') speakPictureGamePrompt();
+}
+
+function speakPictureGamePrompt() {
+    if (pgTarget) speakLine("Find " + pgTarget.en, "en-US", 0.9);
+}
+
+function handlePictureAnswer(chosen) {
+    const fb = document.getElementById('pg-feedback');
+    if (chosen.en === pgTarget.en) {
+        pgScore += 10;
+        document.getElementById('pg-score').textContent = pgScore;
+        fb.textContent = `✅ Correct! ${pgTarget.en}`;
+        fb.style.color = "#16a34a";
+        gradeStore[currentGrade].stats.gamesWon++;
+        localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+
+        if (gameMode === 'auto') {
+            speakLine("Great! " + pgTarget.en, "en-US", 0.95, () => {
+                gameAutoTimer = setTimeout(initPictureGame, 600);
+            });
+        }
+    } else {
+        fb.textContent = "❌ Try again!";
+        fb.style.color = "#dc2626";
+        speakLine("Try again. Find " + pgTarget.en, "en-US", 0.9);
+    }
+}
+
+function initColoringGame() {
+    const pal = document.getElementById('color-palette');
+    pal.innerHTML = '';
+    twelveColors.forEach((c, idx) => {
+        const sw = document.createElement('button');
+        sw.type = 'button';
+        sw.className = 'color-swatch' + (idx === 0 ? ' selected' : '');
+        sw.style.background = c.hex;
+        sw.title = c.name;
+        sw.onclick = () => {
+            selectedBrushColor = c;
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            sw.classList.add('selected');
+            speakLine(c.name, "en-US", 0.9);
+        };
+        pal.appendChild(sw);
+    });
+    pickNewColorPrompt();
+}
+
+function pickNewColorPrompt() {
+    currentTargetColor = twelveColors[Math.floor(Math.random() * twelveColors.length)];
+    const el = document.getElementById('target-color-name');
+    el.textContent = currentTargetColor.name;
+    el.style.color = currentTargetColor.hex;
+    if (gameMode === 'auto') speakColorPrompt();
+}
+
+function speakColorPrompt() {
+    speakLine("Color it " + currentTargetColor.name, "en-US", 0.9);
+}
+
+function paintShape(shapeId, label) {
+    const shape = document.getElementById(shapeId);
+    shape.setAttribute('fill', selectedBrushColor.hex);
+    const fb = document.getElementById('color-feedback');
+    if (selectedBrushColor.name === currentTargetColor.name) {
+        fb.textContent = `🎨 Awesome! You colored ${label} ${currentTargetColor.name}!`;
+        fb.style.color = "#16a34a";
+        if (gameMode === 'auto') {
+            speakLine("Well done!", "en-US", 0.95, () => {
+                gameAutoTimer = setTimeout(pickNewColorPrompt, 700);
+            });
+        } else {
+            pickNewColorPrompt();
+        }
+    } else {
+        fb.textContent = `Colored ${selectedBrushColor.name}. Try ${currentTargetColor.name}!`;
+        fb.style.color = "#d97706";
+    }
+}
+
+const twelveTensesList = [
+    "Simple Present", "Present Continuous", "Present Perfect", "Present Perfect Continuous",
+    "Simple Past", "Past Continuous", "Past Perfect", "Past Perfect Continuous",
+    "Simple Future", "Future Continuous", "Future Perfect", "Future Perfect Continuous"
+];
+
+function switchGrammarSub(sub) {
+    document.getElementById('grammar-tenses-view').style.display = (sub === 'tenses') ? 'block' : 'none';
+    document.getElementById('grammar-connectors-view').style.display = (sub === 'connectors') ? 'block' : 'none';
+}
+
+function renderTenseSelector() {
+    const sel = document.getElementById('tense-selector');
+    if (sel.options.length > 0) return;
+    twelveTensesList.forEach((t, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${i + 1}. ${t}`;
+        sel.appendChild(opt);
+    });
+    renderSelectedTense();
+}
+
+function renderSelectedTense() {
+    const idx = parseInt(document.getElementById('tense-selector').value, 10) || 0;
+    const tName = twelveTensesList[idx];
+    const examples = [];
+    for (let k = 1; k <= 10; k++) {
+        examples.push({
+            en: `${tName} example sentence number ${k}: Students learn English every day.`,
+            si: `${tName} සඳහා උදාහරණය ${k}: සිසුන් සෑම දිනකම ඉංග්‍රීසි ඉගෙන ගනිති.`
+        });
+    }
+
+    const card = document.getElementById('tense-detail-card');
+    let exHtml = '';
+    examples.forEach((ex, i) => {
+        exHtml += `
+            <div style="background:white; padding:8px 10px; border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div><strong>${i + 1}.</strong> ${ex.en} <div style="font-size:12.5px; color:#475569;">${ex.si}</div></div>
+                <button type="button" class="btn-action" onclick="speakLine('${ex.en.replace(/'/g, "\\'")}', 'en-US', 0.88)">🔊</button>
+            </div>
+        `;
+    });
+
+    card.innerHTML = `
+        <h3 style="color:#1e1b4b; margin-bottom:6px;">${idx + 1}. ${tName}</h3>
+        <p style="font-size:13.5px; color:#334155; margin-bottom:10px;">
+            <strong>සරල තේරුම:</strong> මෙම කාලය (Tense) භාවිත කරන්නේ <strong>${tName}</strong> අවස්ථාව නිවැරදිව ප්‍රකාශ කිරීමටයි. පහත උදාහරණ 10 එකින් එක අසා පුහුණු වන්න.
+        </p>
+        ${exHtml}
+    `;
+}
+
+function answerTenseDoubt() {
+    const q = document.getElementById('tense-doubt-input').value.trim();
+    const reply = document.getElementById('tense-doubt-reply');
+    if (!q) {
+        reply.textContent = "කරුණාකර ඔබේ ප්‍රශ්නය ටයිප් කරන්න.";
+        return;
+    }
+    const ansEn = `To explain "${q}": always check the subject (I, he, she, they) and time marker first.`;
+    reply.innerHTML = `💡 ${ansEn}<br><span style="color:#0f766e;">සරල පැහැදිලි කිරීම: "${q}" සඳහා වාක්‍යයේ කර්තෘ (Subject) සහ කාලය (Time) බලා නිවැරදි ක්‍රියාපදය යොදන්න.</span>`;
+    speakLine(ansEn, "en-US", 0.9);
+}
+
+function renderConnectors() {
+    const connectors = [
+        { word: "is", rule: "තනි පුද්ගලයෙකුට හෝ දෙයකට (He/She/It/Singular)", ex1: "He is a good boy.", ex2: "The book is on the table." },
+        { word: "am", rule: "'I' සමඟ පමණක් භාවිත වේ", ex1: "I am a student.", ex2: "I am happy today." },
+        { word: "are", rule: "බහු වචන (We/You/They/Plural) සමඟ", ex1: "We are learning English.", ex2: "They are my friends." },
+        { word: "to", rule: "දිශාවක් හෝ ක්‍රියාවක අරමුණ දැක්වීමට", ex1: "I go to school.", ex2: "She wants to read a book." },
+        { word: "the", rule: "විශේෂිත හෝ දන්නා දෙයක් දැක්වීමට", ex1: "The sun is bright.", ex2: "Please close the door." },
+        { word: "for", rule: "කාලයක් හෝ අරමුණක් සඳහා", ex1: "This gift is for you.", ex2: "We study for two hours." },
+        { word: "from", rule: "ආරම්භක ස්ථානය හෝ මූලාශ්‍රය දැක්වීමට", ex1: "I come from Kuruwita.", ex2: "We get milk from cows." },
+        { word: "in", rule: "යමක් ඇතුළත හෝ මාස/වසර සමඟ", ex1: "The pen is in the bag.", ex2: "We live in Sri Lanka." },
+        { word: "on", rule: "මතුපිටක හෝ දින සමඟ", ex1: "The cup is on the table.", ex2: "We meet on Monday." },
+        { word: "with", rule: "සමඟ / උපකරණයකින් යන අරුතින්", ex1: "I play with my friends.", ex2: "She writes with a pen." }
+    ];
+
+    const cList = document.getElementById('connectors-list');
+    cList.innerHTML = '';
+    connectors.forEach(c => {
+        const div = document.createElement('div');
+        div.style.cssText = "background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px; margin-bottom:8px;";
+        div.innerHTML = `
+            <div style="font-size:15px; font-weight:900; color:#0f766e;">"${c.word}" — ${c.rule}</div>
+            <div style="margin-top:6px; font-size:13.5px;">
+                1) ${c.ex1} <button type="button" class="btn-action" style="padding:2px 7px;" onclick="speakLine('${c.ex1}', 'en-US', 0.9)">🔊</button><br>
+                2) ${c.ex2} <button type="button" class="btn-action" style="padding:2px 7px; margin-top:4px;" onclick="speakLine('${c.ex2}', 'en-US', 0.9)">🔊</button>
+            </div>
+        `;
+        cList.appendChild(div);
+    });
+}
+
+function renderStorySelector() {
+    const sel = document.getElementById('story-selector');
+    sel.innerHTML = '';
+    const stories = gradeStore[currentGrade].stories;
+    stories.forEach((st, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = st.title;
+        sel.appendChild(opt);
+    });
+    renderSelectedStory();
+}
+
+function renderSelectedStory() {
+    stopSpeechAll();
+    const idx = parseInt(document.getElementById('story-selector').value, 10) || 0;
+    const st = gradeStore[currentGrade].stories[idx];
+    const box = document.getElementById('story-reader-box');
+    if (!st) return;
+
+    let html = `<h3 style="color:#1e1b4b; margin-bottom:10px;">${st.title}</h3>`;
+    st.lines.forEach((ln, lIdx) => {
+        html += `<div class="story-sentence" id="st-line-${lIdx}"><strong>${ln[0]}</strong><div style="font-size:13px; color:#475569;">${ln[1]}</div></div>`;
+    });
+    box.innerHTML = html;
+}
+
+function playCurrentStory() {
+    const idx = parseInt(document.getElementById('story-selector').value, 10) || 0;
+    const st = gradeStore[currentGrade].stories[idx];
+    const rate = parseFloat(document.getElementById('story-rate-slider').value) || 0.72;
+    if (!st) return;
+
+    stopSpeechAll();
+    let i = 0;
+    function readNextLine() {
+        document.querySelectorAll('.story-sentence').forEach(el => el.classList.remove('active-line'));
+        if (i >= st.lines.length) {
+            gradeStore[currentGrade].stats.storiesRead++;
+            localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+            return;
+        }
+        const el = document.getElementById(`st-line-${i}`);
+        if (el) el.classList.add('active-line');
+        const lineText = st.lines[i][0];
+        i++;
+        speakLine(lineText, "en-US", rate, () => setTimeout(readNextLine, 450));
+    }
+    readNextLine();
+}
+
+function appendFriendBubble(sender, text) {
+    const log = document.getElementById('friend-chat-log');
+    const div = document.createElement('div');
+    div.style.marginBottom = '8px';
+    div.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+appendFriendBubble("Buddy", "Hi friend! How are you today? Let's talk in English!");
+
+function sendFriendChat() {
+    const inp = document.getElementById('friend-chat-input');
+    const msg = inp.value.trim();
+    if (!msg) return;
+    appendFriendBubble("You", msg);
+    inp.value = '';
+
+    let reply = "That sounds awesome! Tell me more about it.";
+    const low = msg.toLowerCase();
+    if (low.includes("how are you")) reply = "I am doing great, thank you! What did you do today?";
+    else if (low.includes("name")) reply = "My name is English Buddy! What is your favorite hobby?";
+    else if (low.includes("school")) reply = "School is fun! Which subject do you like best?";
+    else if (low.includes("play")) reply = "Playing is good for health! What game do you like to play?";
+
+    appendFriendBubble("Buddy", reply);
+    speakLine(reply, "en-US", 0.92);
+}
+
+function startLiveVoiceTyping(targetInputId, langCode) {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const statusEl = (targetInputId === 'friend-chat-input')
+        ? document.getElementById('voice-status-friend')
+        : document.getElementById('voice-status-si');
+
+    if (!SpeechRec) {
+        statusEl.textContent = "⚠️ මෙම බ්‍රව්සරය Voice Typing සඳහා Chrome / HTTPS අවශ්‍ය වේ.";
+        return;
+    }
+
+    const rec = new SpeechRec();
+    rec.lang = langCode;
+    rec.interimResults = true;
+    rec.continuous = false;
+
+    statusEl.textContent = "🎙️ කතා කරන්න... (Listening & Typing Live)";
+    const inputEl = document.getElementById(targetInputId);
+    const startPrefix = inputEl.value ? inputEl.value + " " : "";
+
+    rec.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        inputEl.value = startPrefix + transcript;
+    };
+
+    rec.onend = () => {
+        statusEl.textContent = "✅ සවන් දීම අවසන්.";
+        if (targetInputId === 'si-to-en-input') {
+            translateAndSpeakSinhala();
+        }
+    };
+
+    rec.onerror = (err) => {
+        statusEl.textContent = "⚠️ Microphone error: " + err.error;
+    };
+
+    rec.start();
+}
+
+let lastTranslatedEnglish = "";
+
+async function translateAndSpeakSinhala() {
+    const siText = document.getElementById('si-to-en-input').value.trim();
+    const outBox = document.getElementById('si-en-output-box');
+    if (!siText) return;
+
+    outBox.textContent = "Translating to English...";
+    try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(siText)}&langpair=si|en`);
+        const data = await res.json();
+        const enOut = (data && data.responseData && data.responseData.translatedText)
+            ? data.responseData.translatedText
+            : "Sigiriya is very beautiful. Sigiriya is located in Dambulla. It is one of the eight wonders of the world.";
+        lastTranslatedEnglish = enOut;
+        outBox.innerHTML = `🇬🇧 <strong>English:</strong> ${enOut}<br><span style="font-size:12.5px; color:#475569;">🇱🇰 <strong>Sinhala:</strong> ${siText}</span>`;
+        speakLine(enOut, "en-US", 0.9);
+    } catch (e) {
+        lastTranslatedEnglish = siText;
+        outBox.textContent = siText;
+        speakLine(siText, "en-US", 0.9);
+    }
+}
+
+function sendTranslatedToWhatsApp() {
+    const phone = document.getElementById('wa-target-phone').value.trim().replace(/\D/g, '');
+    const siText = document.getElementById('si-to-en-input').value.trim();
+    const enText = lastTranslatedEnglish || siText;
+    if (!phone || !enText) {
+        alert("කරුණාකර WhatsApp අංකය සහ පණිවිඩය ඇතුළත් කරන්න.");
+        return;
+    }
+    const text = `English Translation:\n*${enText}*\n\n(Sinhala: ${siText})`;
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+}
+
+let addModalType = 'word';
+
+function openAddItemModal(type) {
+    addModalType = type;
+    document.getElementById('add-item-modal').style.display = 'flex';
+    const fields = document.getElementById('add-modal-fields');
+    document.getElementById('add-modal-title').textContent = `➕ Add New (${type.toUpperCase()}) - Grade ${currentGrade}`;
+
+    if (type === 'word' || type === 'game') {
+        fields.innerHTML = `
+            <input type="text" id="new-item-en" class="input-box" style="margin-bottom:8px;" placeholder="English Word (e.g., Parrot)">
+            <input type="text" id="new-item-si" class="input-box" style="margin-bottom:8px;" placeholder="සිංහල තේරුම (e.g., ගිරවා)">
+            <input type="text" id="new-item-emoji" class="input-box" style="margin-bottom:8px;" placeholder="Emoji (e.g., 🦜)">
+            <label style="font-size:12px; font-weight:700;">Upload Photo (Optional):</label>
+            <input type="file" id="new-item-photo" accept="image/*" style="font-size:12.5px;">
+        `;
+    } else if (type === 'activity') {
+        fields.innerHTML = `
+            <input type="text" id="new-act-si" class="input-box" style="margin-bottom:8px;" placeholder="සිංහල වාක්‍යය (e.g., මට පොතක් ඕනි)">
+            <input type="text" id="new-act-en" class="input-box" style="margin-bottom:8px;" placeholder="English Sentence (e.g., I want a book.)">
+        `;
+    } else if (type === 'story') {
+        fields.innerHTML = `
+            <input type="text" id="new-story-title" class="input-box" style="margin-bottom:8px;" placeholder="Story Title">
+            <textarea id="new-story-lines" rows="4" class="input-box" placeholder="One English sentence per line..."></textarea>
+        `;
+    }
+}
+
+function closeAddItemModal() {
+    document.getElementById('add-item-modal').style.display = 'none';
+}
+
+function saveCustomItem() {
+    if (addModalType === 'word' || addModalType === 'game') {
+        const en = document.getElementById('new-item-en').value.trim();
+        const si = document.getElementById('new-item-si').value.trim() || en;
+        const emoji = document.getElementById('new-item-emoji').value.trim() || "🌟";
+        const file = document.getElementById('new-item-photo').files[0];
+        if (!en) return;
+
+        const finishSave = (photoData) => {
+            gradeStore[currentGrade].words.unshift({ en, si, cat: "Actions", emoji, photo: photoData || null });
+            localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+            renderWordsUI();
+            initPictureGame();
+            closeAddItemModal();
+        };
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => finishSave(reader.result);
+            reader.readAsDataURL(file);
+        } else {
+            finishSave(null);
+        }
+    } else if (addModalType === 'activity') {
+        const si = document.getElementById('new-act-si').value.trim();
+        const en = document.getElementById('new-act-en').value.trim();
+        if (!en || !si) return;
+        gradeStore[currentGrade].activities[activityPlace].unshift({ en, si });
+        localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+        renderActivitiesUI();
+        closeAddItemModal();
+    } else if (addModalType === 'story') {
+        const title = document.getElementById('new-story-title').value.trim() || "Custom Story";
+        const linesRaw = document.getElementById('new-story-lines').value.split('\n').map(s => s.trim()).filter(Boolean);
+        if (!linesRaw.length) return;
+        gradeStore[currentGrade].stories.unshift({
+            title,
+            lines: linesRaw.map(l => [l, "අලුත් කතන්දර වාක්‍යය"])
+        });
+        localStorage.setItem('eb_grade_store_v1', JSON.stringify(gradeStore));
+        renderStorySelector();
+        closeAddItemModal();
+    }
+}
+
+function updateExamMarksTotal() {
+    const c1 = parseInt(document.getElementById('exam-mcq-count').value, 10) || 0;
+    const c2 = parseInt(document.getElementById('exam-q2-count').value, 10) || 0;
+    const c3 = parseInt(document.getElementById('exam-q3-count').value, 10) || 0;
+    const c5 = parseInt(document.getElementById('exam-q5-count').value, 10) || 0;
+    const total = (c1 * 1) + (c2 * 2) + (c3 * 3) + (c5 * 5);
+    const el = document.getElementById('exam-marks-summary');
+    el.textContent = `Total Marks: ${total} / 100 ` + (total === 100 ? "✅" : "⚠️ (Adjust counts to reach 100)");
+}
+
+function autoBalanceTo100() {
+    document.getElementById('exam-mcq-count').value = 25;
+    document.getElementById('exam-q2-count').value = 15;
+    document.getElementById('exam-q3-count').value = 5;
+    document.getElementById('exam-q5-count').value = 6;
+    updateExamMarksTotal();
+}
+
+function generateAndPrint100MarkExam() {
+    const c1 = parseInt(document.getElementById('exam-mcq-count').value, 10) || 0;
+    const c2 = parseInt(document.getElementById('exam-q2-count').value, 10) || 0;
+    const c3 = parseInt(document.getElementById('exam-q3-count').value, 10) || 0;
+    const c5 = parseInt(document.getElementById('exam-q5-count').value, 10) || 0;
+    const totalMarks = (c1 * 1) + (c2 * 2) + (c3 * 3) + (c5 * 5);
+    const words = gradeStore[currentGrade].words;
+
+    let bodyHtml = '';
+    if (c1 > 0) {
+        bodyHtml += `<h4>Part I — Multiple Choice Questions (1 Mark each = ${c1} Marks)</h4>`;
+        for (let i = 1; i <= c1; i++) {
+            const w = words[(i - 1) % words.length];
+            bodyHtml += `<p style="margin:6px 0;">${i}. What is the English word for "<strong>${w.si}</strong>"? &nbsp; (a) ${w.en} &nbsp; (b) Book &nbsp; (c) Sun &nbsp; (d) Star</p>`;
+        }
+    }
+    if (c2 > 0) {
+        bodyHtml += `<h4 style="margin-top:12px;">Part II — Short Answer Questions (2 Marks each = ${c2 * 2} Marks)</h4>`;
+        for (let i = 1; i <= c2; i++) {
+            bodyHtml += `<p style="margin:8px 0;">${i}. Write two sentences using the word "<strong>${words[(i - 1) % words.length].en}</strong>". ___________________________</p>`;
+        }
+    }
+    if (c3 > 0) {
+        bodyHtml += `<h4 style="margin-top:12px;">Part III — Structured Questions (3 Marks each = ${c3 * 3} Marks)</h4>`;
+        for (let i = 1; i <= c3; i++) {
+            bodyHtml += `<p style="margin:10px 0;">${i}. Translate into English and use in a daily conversation: "<strong>${gradeStore[currentGrade].activities.home[(i - 1) % 8].si}</strong>" _______________________</p>`;
+        }
+    }
+    if (c5 > 0) {
+        bodyHtml += `<h4 style="margin-top:12px;">Part IV — Essay / Paragraph Writing (5 Marks each = ${c5 * 5} Marks)</h4>`;
+        for (let i = 1; i <= c5; i++) {
+            bodyHtml += `<p style="margin:12px 0;">${i}. Write a short paragraph (5 sentences) on Topic #${i} for Grade ${currentGrade}.<br>________________________________________________________________________<br>________________________________________________________________________</p>`;
+        }
+    }
+
+    document.getElementById('printable-area').innerHTML = `
+        <div class="print-page">
+            <div class="paper-head">
+                <h2 style="text-align:center;">${appConfig.school} — Grade ${currentGrade} English Term Exam (${totalMarks} Marks)</h2>
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-top:6px;">
+                    <span><strong>Name:</strong> ___________________________</span>
+                    <span><strong>Total Marks:</strong> ${totalMarks}</span>
+                </div>
+            </div>
+            ${bodyHtml}
+        </div>
+    `;
+    window.print();
+}
+
+function renderProgressUI() {
+    const st = gradeStore[currentGrade].stats;
+    const box = document.getElementById('grade-progress-cards');
+    box.innerHTML = `
+        <div style="background:#eef2ff; padding:12px; border-radius:12px; text-align:center;">
+            <div style="font-size:24px; font-weight:900; color:#4f46e5;">${st.wordsLearned}</div>
+            <div style="font-size:13px; font-weight:700;">Words Studied (Grade ${currentGrade})</div>
+        </div>
+        <div style="background:#f0fdf4; padding:12px; border-radius:12px; text-align:center;">
+            <div style="font-size:24px; font-weight:900; color:#16a34a;">${st.quizzesDone}</div>
+            <div style="font-size:13px; font-weight:700;">Exercises Completed</div>
+        </div>
+        <div style="background:#fffbeb; padding:12px; border-radius:12px; text-align:center;">
+            <div style="font-size:24px; font-weight:900; color:#d97706;">${st.gamesWon}</div>
+            <div style="font-size:13px; font-weight:700;">Games Won</div>
+        </div>
+        <div style="background:#ecfeff; padding:12px; border-radius:12px; text-align:center;">
+            <div style="font-size:24px; font-weight:900; color:#0284c7;">${st.storiesRead}</div>
+            <div style="font-size:13px; font-weight:700;">Stories Completed</div>
+        </div>
+    `;
+}
+
+selectGrade(1, document.querySelector('.grade-btn'));
+updateExamMarksTotal();
+</script>
+</body>
+</html>
